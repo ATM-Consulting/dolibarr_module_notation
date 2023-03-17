@@ -16,7 +16,9 @@
 
 CREATE TABLE llx_notation_notationnote(
     rowid integer not null auto_increment primary key,
-	note float default 0,
+    ref varchar(128) DEFAULT '(PROV)' NOT NULL,
+    note float default 0,
 	fk_session integer,
-	fk_trainee integer
+	fk_trainee integer,
+    status integer NOT NULL
 ) ENGINE=innodb;

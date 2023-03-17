@@ -113,15 +113,19 @@ class NotationNote extends CommonObject
 	 */
 	public $fields=array(
 		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>'1', 'position'=>1, 'notnull'=>1, 'visible'=>0, 'noteditable'=>'1', 'index'=>1, 'css'=>'left', 'comment'=>"Id"),
-		'note' => array('type'=>'real', 'label'=>'note', 'enabled'=>'1', 'position'=>4, 'notnull'=>0, 'visible'=>1, 'default'=>'0', 'isameasure'=>'1', 'css'=>'maxwidth75imp', 'help'=>"Help text for note", 'validate'=>'1',),
-		'fk_session' => array('type'=>'integer:Agsession:agefodd/class/agefodd_session.class.php', 'label'=>'Session', 'picto'=>'Session', 'enabled'=>'1', 'position'=>2, 'notnull'=>-1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'help'=>"OrganizationEventLinkToThirdParty", 'validate'=>'1',),
-		'fk_trainee' => array('type'=>'integer:Agefodd_Stagiaire:agefodd/class/agefodd_stagiaire.class.php:name::card', 'label'=>'AgfFichePresByTraineeTraineeTitleM', 'enabled'=>1, 'position'=>3, 'notnull'=>0, 'visible'=>1),
+		'ref' => array('type'=>'varchar(128)', 'label'=>'Ref', 'enabled'=>'1', 'position'=>2, 'notnull'=>1, 'visible'=>4, 'noteditable'=>'1', 'default'=>'(PROV)', 'index'=>1, 'searchall'=>1, 'showoncombobox'=>'1', 'validate'=>'1', 'comment'=>"Reference of object"),
+		'note' => array('type'=>'real', 'label'=>'note', 'enabled'=>'1', 'position'=>5, 'notnull'=>0, 'visible'=>1, 'default'=>'0', 'isameasure'=>'1', 'css'=>'maxwidth75imp', 'help'=>"Help text for note", 'validate'=>'1',),
+		'fk_session' => array('type'=>'integer:Agsession:agefodd/class/agefodd_session.class.php', 'label'=>'Session', 'picto'=>'Session', 'enabled'=>'1', 'position'=>3, 'notnull'=>-1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'help'=>"SessionLlinkedToNote", 'validate'=>'1',),
+		'fk_trainee' => array('type'=>'integer:Agefodd_Stagiaire:agefodd/class/agefodd_stagiaire.class.php:name::card', 'label'=>'AgfFichePresByTraineeTraineeTitleM', 'enabled'=>1, 'position'=>4, 'notnull'=>0, 'visible'=>1),
+		'status' => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>2000, 'notnull'=>1, 'visible'=>1, 'index'=>1, 'arrayofkeyval'=>array('0'=>'Brouillon', '1'=>'Valid&eacute;', '9'=>'Annul&eacute;'), 'validate'=>'1',),
 	);
 
 	public $rowid;
 	public $note;
+	public $ref;
 	public $fk_session;
 	public $fk_trainee;
+	public $status;
 	// END MODULEBUILDER PROPERTIES
 
 
