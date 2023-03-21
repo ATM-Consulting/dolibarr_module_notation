@@ -43,4 +43,4 @@ $not->fk_trainee = 1;
 $not->fk_session = 1;
 $not->ref = $not->getNextNumRef();
 $not->status = NotationNote::STATUS_DRAFT;
-$not->create($user);
+//$not->create($user);
