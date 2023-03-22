@@ -772,7 +772,14 @@ while ($i < $imaxinloop) {
 					print $object->getLibStatut(5);
 				} elseif ($key == 'rowid') {
 					print $object->showOutputField($val, $key, $object->id, '');
-				} else {
+				} else if ($key == 'fk_session') {
+
+					$agf = new Agsession($db);
+					$res = $agf->fetch($object->fk_session);
+					if ($res){
+						print $agf->getNomUrl(1,"",0,'ref');
+					}
+				}else {
 					print $object->showOutputField($val, $key, $object->$key, '');
 				}
 				print '</td>';
