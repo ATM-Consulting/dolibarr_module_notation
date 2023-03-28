@@ -1057,7 +1057,7 @@ class NotationNote extends CommonObject
 	 * @param  int			$nonewbutton   Force to not show the new button on field that are links to object
 	 * @return string
 	 */
-	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 0)
+	public function showInputField($val, $key, $value, $moreparam = '', $keysuffix = '', $keyprefix = '', $morecss = 0, $nonewbutton = 1)
 	{
 		global $conf, $langs, $form, $db;
 		if (!is_object($form)) {
