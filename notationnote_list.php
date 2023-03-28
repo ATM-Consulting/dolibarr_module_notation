@@ -103,6 +103,7 @@ $backtopage = GETPOST('backtopage', 'alpha'); // Go back to a dedicated page
 $optioncss  = GETPOST('optioncss', 'aZ'); // Option for the css output (always '' except when 'print')
 $mode       = GETPOST('mode', 'aZ');
 $fk_session = GETPOST('search_fk_session', 'int');
+$search_fk_session = GETPOST('search_fk_session', 'int');
 // Load variable for pagination
 $limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
 $sortfield = GETPOST('sortfield', 'aZ09comma');
@@ -496,6 +497,8 @@ print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 print '<input type="hidden" name="page" value="'.$page.'">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';
+print '<input type="hidden" name="fk_session" value="'.$fk_session.'">';
+print '<input type="hidden" name="search_fk_session" value="'.$search_fk_session.'">';
 print '<input type="hidden" name="id" value="'.$id.'">';
 
 
@@ -506,7 +509,7 @@ $newcardbutton = '';
 //$newcardbutton .= dolGetButtonTitleSeparator();
 $newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&fk_session='.$id.'&backtopage='.urlencode($_SERVER['PHP_SELF']).'?search_fk_session='. $id, '', $permissiontoadd);
 
-//print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_'.$object->picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
+
 print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_'.$object->picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 // Add code for pre mass action (confirmation or email presend form)

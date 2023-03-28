@@ -99,7 +99,7 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : str
 $backtopage = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
-$fk_session = GETPOST('fk_session', 'int');
+$fk_session =  GETPOSTISSET('search_fk_session') ? GETPOST('search_fk_session','int') : GETPOST('fk_session', 'int');
 $search_fk_session = GETPOST('search_fk_session', 'int');
 $note = GETPOST('note','int');
 $fk_trainee = GETPOST('fk_trainee', 'int');
@@ -182,13 +182,13 @@ if (empty($reshook)) {
 	}
 
 	// Error handler
-	if ($action == 'add' ||  $action == 'update'){
+	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
 
 		$error=0;
-		if (empty(GETPOST('fk_trainee')) || GETPOST('fk_trainee') <= 0){
-			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv($object->fields['fk_trainee']['label'])), null, 'errors');
+		/*if (empty(GETPOST('fk_trainee')) || GETPOST('fk_trainee') <= 0){
+			//setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv($object->fields['fk_trainee']['label'])), null, 'errors');
 			$error++;
-		}
+		}*/
 
 		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
 			setEventMessages($langs->trans('ErrorType', $langs->transnoentitiesnoconv($object->fields['note']['label'])), null, 'errors');
@@ -201,6 +201,7 @@ if (empty($reshook)) {
 	$triggermodname = 'NOTATION_NOTATIONNOTE_MODIFY'; // Name of trigger action code to execute when we modify record
 
 	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
+	$backtopageforcancel = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
 	$backtopage = "";
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
@@ -278,9 +279,11 @@ if ($action == 'create') {
 
 	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("notation")), '', 'object_'.$object->picto);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+	print '<form method="POST" action="'.$_SERVER["PHP_SELF"] . '">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="add">';
+	print '<input type="hidden" name="fk_session" value="' . $fk_session . '">';
+
 	if ($backtopage) {
 		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 	}
