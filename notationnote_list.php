@@ -514,6 +514,9 @@ $topicmail = "SendNotationNoteRef";
 $modelmail = "notationnote";
 $objecttmp = new NotationNote($db);
 $trackid = 'xxxx'.$object->id;
+
+
+//var_dump($resultAll);
 include DOL_DOCUMENT_ROOT.'/core/tpl/massactions_pre.tpl.php';
 
 if ($search_all) {
