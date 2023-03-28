@@ -126,6 +126,9 @@ class NotationNote extends CommonObject
 	public $fk_session;
 	public $fk_trainee;
 	public $status;
+
+	public $nbLines;
+	public $sumNotation;
 	// END MODULEBUILDER PROPERTIES
 
 
@@ -2034,17 +2037,37 @@ class NotationNote extends CommonObject
 		return $out;
 	}
 
-	public function getTotalNote(){
+	/**
+	 * @return int|Object
+	 */
+	public function setTotalNote(){
 
-		$sql = "SELECT SUM(note) as sum, count(note) as nb WHERE fk_session=".(int)$this->fk_session;
+		$sql = "SELECT SUM(note) as sum, count(note) as nb FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_session=".(int)$this->fk_session;
 		$resql = $this->db->query($sql);
 		if ($resql) {
 				$obj = $this->db->fetch_object($resql);
-				return $obj;
-		}else{
-			return -1;
+				$this->nbLines = $obj->nb;
+				$this->sumNotation = $obj->sum;
 		}
 
+	}
+
+	/**
+	 * @param $user
+	 * @return void
+	 */
+	public function setAvgNotation($user){
+
+		$agf = new Agsession($this->db);
+		$res  = $agf->fetch($this->fk_session);
+		if ($res >  0){
+			$agf->fetch_optionals();
+			$this->setTotalNote();
+			$avg = $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;
+			$agf->array_options['options_average_session_notation'] =  $avg;
+			$agf->insertExtraFields();
+			//$agf->update($user);
+		}
 	}
 }
 

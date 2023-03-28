@@ -108,42 +108,22 @@ class InterfaceNotationTriggers extends DolibarrTriggers
 
 			return call_user_func($callback, $action, $object, $user, $langs, $conf);
 		};
-			$agf = new Agsession($this->db);
-			$res  = $agf->fetch($object->fk_session);
-			if ($res >  0){
 
-			}
+
+
 		// Or you can execute some code here
 		switch ($action) {
 
 			case  	'NOTATIONNOTE_CREATE':
-
-				if ($res > 0){
-
-				}
-
-				// FK SESSION
-
-				// on selectionnes toutes les notes pour la session en cours
-
-				// on ajoute la nouvelle note
-
-				// on fait la moyenne pour ce truc
+				$object->setAvgNotation($user);
 				break;
 
 			case  	'NOTATIONNOTE_MODIFY':
-
-				if ($res > 0){
-						$obj = $object->getTotalDiscount();
-
-				}
+				$object->setAvgNotation($user);
 				break;
 
 			case  	'NOTATIONNOTE_DELETE':
-
-				if ($res > 0){
-
-				}
+				$object->setAvgNotation($user);
 				break;
 
 
@@ -153,7 +133,6 @@ class InterfaceNotationTriggers extends DolibarrTriggers
 				dol_syslog("Trigger '".$this->name."' for action '$action' launched by ".__FILE__.". id=".$object->id);
 				break;
 		}
-
 		return 0;
 	}
 }
