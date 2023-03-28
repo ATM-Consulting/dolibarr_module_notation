@@ -38,3 +38,8 @@ About = À propos
 #
 MIN_NOTATION=Note minimale
 MAX_NOTATION=Note maximale
+
+#
+# error
+#
+ErrorType=La valeur du champs note doit être du type numérique, doit être comprise entre les valeurs définies dans l'administration du module Notation (min - max ).
