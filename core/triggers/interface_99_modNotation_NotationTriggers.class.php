@@ -116,7 +116,12 @@ class InterfaceNotationTriggers extends DolibarrTriggers
 		// Or you can execute some code here
 		switch ($action) {
 
-			case  	'NotationNote_CREATE':
+			case  	'NOTATIONNOTE_CREATE':
+
+				if ($res > 0){
+
+				}
+
 				// FK SESSION
 
 				// on selectionnes toutes les notes pour la session en cours
@@ -126,12 +131,19 @@ class InterfaceNotationTriggers extends DolibarrTriggers
 				// on fait la moyenne pour ce truc
 				break;
 
-			case  	'NotationNote_MODIFY':
+			case  	'NOTATIONNOTE_MODIFY':
 
+				if ($res > 0){
+						$obj = $object->getTotalDiscount();
+
+				}
 				break;
 
-			case  	'NotationNote_DELETE':
+			case  	'NOTATIONNOTE_DELETE':
 
+				if ($res > 0){
+
+				}
 				break;
 
 

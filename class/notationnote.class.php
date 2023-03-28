@@ -2033,6 +2033,19 @@ class NotationNote extends CommonObject
 
 		return $out;
 	}
+
+	public function getTotalNote(){
+
+		$sql = "SELECT SUM(note) as sum, count(note) as nb WHERE fk_session=".(int)$this->fk_session;
+		$resql = $this->db->query($sql);
+		if ($resql) {
+				$obj = $this->db->fetch_object($resql);
+				return $obj;
+		}else{
+			return -1;
+		}
+
+	}
 }
 
 
