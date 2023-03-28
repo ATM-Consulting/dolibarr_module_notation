@@ -99,7 +99,7 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : str
 $backtopage = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
-$fk_session = GETPOST('fk_session', 'int');
+$fk_session =  GETPOSTISSET('search_fk_session') ? GETPOST('search_fk_session','int') : GETPOST('fk_session', 'int');
 $search_fk_session = GETPOST('search_fk_session', 'int');
 $note = GETPOST('note','int');
 $fk_trainee = GETPOST('fk_trainee', 'int');
@@ -182,13 +182,13 @@ if (empty($reshook)) {
 	}
 
 	// Error handler
-	if ($action == 'add' ||  $action == 'update'){
+	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
 
 		$error=0;
-		if (empty(GETPOST('fk_trainee')) || GETPOST('fk_trainee') <= 0){
-			setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv($object->fields['fk_trainee']['label'])), null, 'errors');
+		/*if (empty(GETPOST('fk_trainee')) || GETPOST('fk_trainee') <= 0){
+			//setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv($object->fields['fk_trainee']['label'])), null, 'errors');
 			$error++;
-		}
+		}*/
 
 		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
 			setEventMessages($langs->trans('ErrorType', $langs->transnoentitiesnoconv($object->fields['note']['label'])), null, 'errors');
@@ -201,6 +201,7 @@ if (empty($reshook)) {
 	$triggermodname = 'NOTATION_NOTATIONNOTE_MODIFY'; // Name of trigger action code to execute when we modify record
 
 	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
+	$backtopageforcancel = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
 	$backtopage = "";
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
@@ -278,9 +279,11 @@ if ($action == 'create') {
 
 	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("notation")), '', 'object_'.$object->picto);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+	print '<form method="POST" action="'.$_SERVER["PHP_SELF"] . '">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="add">';
+	print '<input type="hidden" name="fk_session" value="' . $fk_session . '">';
+
 	if ($backtopage) {
 		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 	}
@@ -296,76 +299,7 @@ if ($action == 'create') {
 	print '<table class="border centpercent tableforfieldcreate">'."\n";
 
 	// Common attributes
-	//include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';
-
-	// definition personnal
-	$object->fields = dol_sort_array($object->fields, 'position');
-
-	foreach ($object->fields as $key => $val) {
-		// Discard if extrafield is a hidden field on form
-		if (abs($val['visible']) != 1 && abs($val['visible']) != 3) {
-			continue;
-		}
-
-		if (array_key_exists('enabled', $val) && isset($val['enabled']) && !verifCond($val['enabled'])) {
-			continue; // We don't want this field
-		}
-
-		print '<tr class="field_'.$key.'">';
-		print '<td';
-		print ' class="titlefieldcreate';
-		if (isset($val['notnull']) && $val['notnull'] > 0) {
-			print ' fieldrequired';
-		}
-		if ($val['type'] == 'text' || $val['type'] == 'html') {
-			print ' tdtop';
-		}
-		print '"';
-		print '>';
-		if (!empty($val['help'])) {
-			print $form->textwithpicto($langs->trans($val['label']), $langs->trans($val['help']));
-		} else {
-			print $langs->trans($val['label']);
-		}
-		print '</td>';
-		print '<td class="valuefieldcreate">';
-		if (!empty($val['picto'])) {
-			print img_picto('', $val['picto'], '', false, 0, 0, '', 'pictofixedwidth');
-		}
-		if (in_array($val['type'], array('int', 'integer'))) {
-			$value = GETPOST($key, 'int');
-		} elseif ($val['type'] == 'double') {
-			$value = price2num(GETPOST($key, 'alphanohtml'));
-		} elseif ($val['type'] == 'text' || $val['type'] == 'html') {
-			$value = GETPOST($key, 'restricthtml');
-		} elseif ($val['type'] == 'date') {
-			$value = dol_mktime(12, 0, 0, GETPOST($key.'month', 'int'), GETPOST($key.'day', 'int'), GETPOST($key.'year', 'int'));
-		} elseif ($val['type'] == 'datetime') {
-			$value = dol_mktime(GETPOST($key.'hour', 'int'), GETPOST($key.'min', 'int'), 0, GETPOST($key.'month', 'int'), GETPOST($key.'day', 'int'), GETPOST($key.'year', 'int'));
-		} elseif ($val['type'] == 'boolean') {
-			$value = (GETPOST($key) == 'on' ? 1 : 0);
-		} elseif ($val['type'] == 'price') {
-			$value = price2num(GETPOST($key));
-		} elseif ($key == 'lang') {
-			$value = GETPOST($key, 'aZ09');
-		} else {
-			$value = GETPOST($key, 'alphanohtml');
-		}
-		if (!empty($val['noteditable'])) {
-			print $object->showOutputField($val, $key, $value, '', '', '', 0);
-		} else {
-			if ($key == 'lang') {
-				print img_picto('', 'language', 'class="pictofixedwidth"');
-				print $formadmin->select_language($value, $key, 0, null, 1, 0, 0, 'minwidth300', 2);
-			} else {
-				print $object->showInputField($val, $key, $value, '', '', '', 0);
-			}
-		}
-		print '</td>';
-		print '</tr>';
-	}
-	// definition personal
-
+	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_add.tpl.php';
 
 	// Other attributes
 	include DOL_DOCUMENT_ROOT.'/core/tpl/extrafields_add.tpl.php';
