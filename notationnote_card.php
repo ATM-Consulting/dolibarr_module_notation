@@ -358,8 +358,8 @@ if (($id || $ref) && $action == 'edit') {
 if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create'))) {
 	$res = $object->fetch_optionals();
 
-	//$head = notationnotePrepareHead($object);
-	//print dol_get_fiche_head($head, 'card', $langs->trans("notation"), 0, $object->picto);
+	$head = notationnotePrepareHead($object);
+	print dol_get_fiche_head($head, 'card', $langs->trans("notation"), 0, $object->picto);
 
 	$formconfirm = '';
 
@@ -526,16 +526,6 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 			print dolGetButtonAction($langs->trans('Modify'), '', 'default', $_SERVER["PHP_SELF"].'?fk_session=' . $fk_session . '&id='.$object->id.'&action=edit&token='.newToken(), '', $permissiontoadd);
 
-			// Validate
-			if ($object->status == $object::STATUS_DRAFT) {
-				if (empty($object->table_element_line) || (is_array($object->lines) && count($object->lines) > 0)) {
-					print dolGetButtonAction($langs->trans('Validate'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=confirm_validate&confirm=yes&token='.newToken(), '', $permissiontoadd);
-				} else {
-					$langs->load("errors");
-					print dolGetButtonAction($langs->trans("ErrorAddAtLeastOneLineFirst"), $langs->trans("Validate"), 'default', '#', '', 0);
-				}
-			}
-
 			// Delete (need delete permission, or if draft, just need create/modify permission)
 			print dolGetButtonAction($langs->trans('Delete'), '', 'delete',  $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete&token='.newToken().'&fk_session='.$fk_session, '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
 		}
@@ -579,7 +569,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		// List of actions on element
 		include_once DOL_DOCUMENT_ROOT.'/core/class/html.formactions.class.php';
 		$formactions = new FormActions($db);
-		$somethingshown = $formactions->showactions($object, $object->element.'@'.$object->module, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlcenter);
+		//$somethingshown = $formactions->showactions($object, $object->element.'@'.$object->module, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlcenter);
 
 		print '</div></div>';
 	}
