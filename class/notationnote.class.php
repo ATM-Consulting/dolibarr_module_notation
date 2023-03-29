@@ -2038,11 +2038,15 @@ class NotationNote extends CommonObject
 	}
 
 	/**
-	 * @return int|Object
+	 * @param $deleteTrigged
+	 * @return void
 	 */
-	public function setTotalNote(){
+	public function setTotalNote($deleteTrigged = false){
 
 		$sql = "SELECT SUM(note) as sum, count(note) as nb FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_session=".(int)$this->fk_session;
+		if ($deleteTrigged)#
+			$sql .= " AND rowid not in(".$this->id.")";
+
 		$resql = $this->db->query($sql);
 		if ($resql) {
 				$obj = $this->db->fetch_object($resql);
@@ -2053,18 +2057,17 @@ class NotationNote extends CommonObject
 	}
 
 	/**
-	 * @param $user
+	 * @param $deleteTrigged
 	 * @return void
 	 */
-	public function setAvgNotation($user){
+	public function setAvgNotation($deleteTrigged = false){
 
 		$agf = new Agsession($this->db);
 		$res  = $agf->fetch($this->fk_session);
 		if ($res >  0){
 			$agf->fetch_optionals();
-			$this->setTotalNote();
-			$avg = $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;
-			$agf->array_options['options_average_session_notation'] =  $avg;
+			$this->setTotalNote($deleteTrigged);
+			$agf->array_options['options_average_session_notation'] =  $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;;
 			$agf->insertExtraFields();
 		}
 	}
