@@ -2066,7 +2066,6 @@ class NotationNote extends CommonObject
 			$avg = $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;
 			$agf->array_options['options_average_session_notation'] =  $avg;
 			$agf->insertExtraFields();
-			//$agf->update($user);
 		}
 	}
 }
