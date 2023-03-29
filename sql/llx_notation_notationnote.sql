@@ -19,6 +19,5 @@ CREATE TABLE llx_notation_notationnote(
     ref varchar(128) DEFAULT '(PROV)' NOT NULL,
     note float default 0,
 	fk_session integer,
-	fk_trainee integer,
-    status integer NOT NULL
+	fk_trainee integer
 ) ENGINE=innodb;
