@@ -174,7 +174,11 @@ class modNotation extends DolibarrModules
 
 		// Array to add new pages in new tabs
 		$this->tabs = array();
+		// ligne vers session tab
 		$this->tabs[] = array('data' => 'agefodd_session:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?search_fk_session=__ID__');
+		// ligne vers formation tab
+		$this->tabs[] = array('data' => 'agefodd_training:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?formation=__ID__');
+
 		// Example:
 		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@notation:$user->rights->notation->read:/notation/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
 		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@notation:$user->rights->othermodule->read:/notation/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
