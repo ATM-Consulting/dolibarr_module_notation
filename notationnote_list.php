@@ -394,9 +394,11 @@ if ($id) {
 	$agf = new Agsession($db);
 	$result = $agf->fetch($id);
 	$head = session_prepare_head($agf);
-}
-print dol_get_fiche_head($head, 'notation', $langs->trans("Detail"), 0, '',0,);
 
+	print dol_get_fiche_head($head, 'notation', $langs->trans("Detail"), 0, '', 0,);
+
+	dol_agefodd_banner_tab($agf, 'session');
+}
 $arrayofselected = is_array($toselect) ? $toselect : array();
 
 $param = '';
