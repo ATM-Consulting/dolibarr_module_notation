@@ -80,7 +80,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 dol_include_once('/agefodd/lib/agefodd.lib.php');
 dol_include_once('/agefodd/class/agsession.class.php');
-
+dol_include_once('/agefodd/class/agefodd_formation_catalogue.class.php');
 // load notation libraries
 require_once __DIR__.'/class/notationnote.class.php';
 
@@ -90,7 +90,7 @@ require_once __DIR__.'/class/notationnote.class.php';
 // Load translation files required by the page
 $langs->loadLangs(array("notation@notation", "other"));
 
-$id = GETPOSTISSET('id') ?  GETPOST('id', 'int') : GETPOST('search_fk_session', 'int');
+$id = GETPOSTISSET('id') ?  GETPOST('id', 'int') : GETPOST('session', 'int');
 $ref = GETPOST('ref', 'alpha');
 
 $action     = GETPOST('action', 'aZ09') ?GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
@@ -103,13 +103,16 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : str
 $backtopage = GETPOST('backtopage', 'alpha'); // Go back to a dedicated page
 $optioncss  = GETPOST('optioncss', 'aZ'); // Option for the css output (always '' except when 'print')
 $mode       = GETPOST('mode', 'aZ');
-$fk_session = GETPOST('search_fk_session', 'int');
-$search_fk_session = GETPOST('search_fk_session', 'int');
+$session = GETPOST('session', 'int');
+//$search_fk_session = GETPOST('search_fk_session', 'int');
+$formation = GETPOST('formation', 'int');
+
 // Load variable for pagination
 $limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
 $sortfield = GETPOST('sortfield', 'aZ09comma');
 $sortorder = GETPOST('sortorder', 'aZ09comma');
 $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
+
 if (empty($page) || $page < 0 || GETPOST('button_search', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
 	// If $page is not defined, or '' or -1 or if we click on clear filters
 	$page = 0;
@@ -290,6 +293,12 @@ $sql .= " FROM ".MAIN_DB_PREFIX.$object->table_element." as t";
 if (isset($extrafields->attributes[$object->table_element]['label']) && is_array($extrafields->attributes[$object->table_element]['label']) && count($extrafields->attributes[$object->table_element]['label'])) {
 	$sql .= " LEFT JOIN ".MAIN_DB_PREFIX.$object->table_element."_extrafields as ef on (t.rowid = ef.fk_object)";
 }
+
+if (!empty($formation)){
+	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'agefodd_session as s ';
+	$sql.= 'ON s.rowid=t.fk_session ';
+}
+
 // Add table from hooks
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListFrom', $parameters, $object); // Note that $action and $object may have been modified by hook
@@ -339,7 +348,13 @@ $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters, $object); // Note that $action and $object may have been modified by hook
 $sql .= $hookmanager->resPrint;
 
+if (!empty($formation)){
+	$sql .= ' AND s.fk_formation_catalogue='.$formation;
+}
 
+if (!empty($session)){
+	$sql .= ' AND t.fk_session='.$session;
+}
 
 // Count total nb of records
 $nbtotalofrecords = '';
@@ -396,14 +411,32 @@ if ($id) {
 	$agf = new Agsession($db);
 	$result = $agf->fetch($id);
 	$head = session_prepare_head($agf);
-	// notab zero pas de background color et -1, est-il besoin de le rappeler, donne le backgroundColor
-	dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'generic');
 
-	dol_agefodd_banner_tab($agf, 'session');
+
+}elseif ($formation){
+	$agf = new Formation($db);
+	$agf->fetch($formation);
+	$head = training_prepare_head($agf);
 }
+
+// notab zero pas de background color et -1, est-il besoin de le rappeler, donne le backgroundColor
+dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'generic');
+
+if (!empty($id)) dol_agefodd_banner_tab($agf, 'session');
+if (!empty($formation)) dol_agefodd_banner_tab($agf, 'formation');
+
+
 $arrayofselected = is_array($toselect) ? $toselect : array();
 
-$param = '';
+$param = '&id='.$id;
+
+if (!empty($formation)){
+	$param .= '&formation='.$formation;
+}
+if (!empty($session)){
+	$param .= '&session='.$session;
+}
+
 if (!empty($mode)) {
 	$param .= '&mode='.urlencode($mode);
 }
@@ -413,6 +446,7 @@ if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) {
 if ($limit > 0 && $limit != $conf->liste_limit) {
 	$param .= '&limit='.urlencode($limit);
 }
+
 foreach ($search as $key => $val) {
 	if (is_array($search[$key])) {
 		foreach ($search[$key] as $skey) {
@@ -465,8 +499,7 @@ print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 print '<input type="hidden" name="page" value="'.$page.'">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';
-print '<input type="hidden" name="fk_session" value="'.$fk_session.'">';
-print '<input type="hidden" name="search_fk_session" value="'.$search_fk_session.'">';
+print '<input type="hidden" name="session" value="'.$session.'">';
 print '<input type="hidden" name="id" value="'.$id.'">';
 
 
@@ -475,7 +508,8 @@ $newcardbutton = '';
 //$newcardbutton .= dolGetButtonTitle($langs->trans('ViewList'), '', 'fa fa-bars imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&token='.newToken().'&mode=common'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ((empty($mode) || $mode == 'common') ? 2 : 1), array('morecss'=>'reposition'));
 //$newcardbutton .= dolGetButtonTitle($langs->trans('ViewKanban'), '', 'fa fa-th-list imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&mode=kanban'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ($mode == 'kanban' ? 2 : 1), array('morecss'=>'reposition'));
 //$newcardbutton .= dolGetButtonTitleSeparator();
-$newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&fk_session='.$id.'&backtopage='.urlencode($_SERVER['PHP_SELF']).'?search_fk_session='. $id, '', $permissiontoadd);
+if (!empty($id))
+$newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&session='.$id.'&backtopage='.urlencode($_SERVER['PHP_SELF']).'?session='. $session, '', $permissiontoadd);
 
 
 print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_notationnote_titre@notation', 0, $newcardbutton, '', $limit, 0, 0, 1);
@@ -757,7 +791,7 @@ while ($i < $imaxinloop) {
 						print $agf->getNomUrl(1,"",0,'ref');
 					}
 				}else if ($key == 'ref') {
-					print $object->getNomUrl(1,"",1,"",-1, $fk_session);
+					print $object->getNomUrl(1,"",1,"",-1, $session);
 				}else{
 					print $object->showOutputField($val, $key, $object->$key, '');
 				}

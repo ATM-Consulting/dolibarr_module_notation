@@ -175,7 +175,7 @@ class modNotation extends DolibarrModules
 		// Array to add new pages in new tabs
 		$this->tabs = array();
 		// ligne vers session tab
-		$this->tabs[] = array('data' => 'agefodd_session:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?search_fk_session=__ID__');
+		$this->tabs[] = array('data' => 'agefodd_session:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?session=__ID__');
 		// ligne vers formation tab
 		$this->tabs[] = array('data' => 'agefodd_training:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?formation=__ID__');
 
@@ -375,7 +375,9 @@ class modNotation extends DolibarrModules
 		// Create extrafields during init
 		//include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 		$extrafields = new ExtraFields($this->db);
-		$ret = $extrafields->addExtraField('average_session_notation', 'Moyenne', 'float', 100, '', 'agefodd_session', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
+		$res1 = $extrafields->addExtraField('average_session_notation', 'Moyenne', 'float', 100, '', 'agefodd_session', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
+		$res2 = $extrafields->addExtraField('average_formation_notation', 'Moyenne', 'float', 100, '', 'agefodd_formation_catalogue', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
+
 		//$result1=$extrafields->addExtraField('notation_myattr1', "New Attr 1 label", 'boolean', 1,  3, 'thirdparty',   0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
 		//$result2=$extrafields->addExtraField('notation_myattr2', "New Attr 2 label", 'varchar', 1, 10, 'project',      0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
 		//$result3=$extrafields->addExtraField('notation_myattr3', "New Attr 3 label", 'varchar', 1, 10, 'bank_account', 0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');

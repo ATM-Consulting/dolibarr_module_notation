@@ -686,9 +686,10 @@ class NotationNote extends CommonObject
 	 *  @param  int     $notooltip                  1=Disable tooltip
 	 *  @param  string  $morecss                    Add more css on link
 	 *  @param  int     $save_lastsearch_value      -1=Auto, 0=No save of lastsearch_values when clicking, 1=Save lastsearch_values whenclicking
+	 *  @param  int    $session   					id of current linked session
 	 *  @return	string                              String with URL
 	 */
-	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1,$fk_session=0)
+	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1, $session = 0)
 	{
 		global $conf, $langs, $hookmanager;
 
@@ -705,7 +706,7 @@ class NotationNote extends CommonObject
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 
-		$url = dol_buildpath('/notation/notationnote_card.php', 1).'?id='.$this->id. "&fk_session=".$fk_session;
+		$url = dol_buildpath('/notation/notationnote_card.php', 1).'?id='.$this->id. "&session=".$session;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -1584,11 +1585,15 @@ class NotationNote extends CommonObject
 				}
 			}
 			if( $label == 'Session' ){
-				$ses = GETPOST('search_fk_session','int');
+				$ses = GETPOST('session','int');
 				$agsession = new Agsession($db);
 				$res = $agsession->fetch($ses);
-				$out = $agsession->getNomUrl(1,"",0,'ref');
-				print '<input type="hidden" name="fk_session" value="'.$ses.'">';
+
+				if ($res > 0 ){
+					$out = $agsession->getNomUrl(1,"",0,'ref');
+					print '<input type="hidden" name="session" value="'.$ses.'">';
+				}
+
 
 			}elseif ($label == 'AgfFichePresByTraineeTraineeTitleM' ) {
 
@@ -1596,7 +1601,7 @@ class NotationNote extends CommonObject
 				$sql2 = " SELECT  s.rowid as id, s.nom as nom, s.prenom as prenom";
 				$sql2 .= " FROM " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s ";
 				$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
-				$sql2 .= " WHERE ss.fk_session_agefodd =" . (int)GETPOST('fk_session','int');
+				$sql2 .= " WHERE ss.fk_session_agefodd =" . (int)GETPOST('session','int');
 
 				$resql2 = $db->query($sql2);
 				$arrStagiaires = [];
@@ -2041,7 +2046,7 @@ class NotationNote extends CommonObject
 	 * @param $deleteTrigged
 	 * @return void
 	 */
-	public function setTotalNote($deleteTrigged = false){
+	public function setTotalNoteSession($deleteTrigged = false){
 
 		$sql = "SELECT SUM(note) as sum, count(note) as nb FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_session=".(int)$this->fk_session;
 		if ($deleteTrigged)#
@@ -2060,16 +2065,70 @@ class NotationNote extends CommonObject
 	 * @param $deleteTrigged
 	 * @return void
 	 */
-	public function setAvgNotation($deleteTrigged = false){
+	public function setTotalNoteFormation($deleteTrigged = false, $fk_formation){
 
-		$agf = new Agsession($this->db);
-		$res  = $agf->fetch($this->fk_session);
-		if ($res >  0){
-			$agf->fetch_optionals();
-			$this->setTotalNote($deleteTrigged);
-			$agf->array_options['options_average_session_notation'] =  $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;;
-			$agf->insertExtraFields();
+		// on selectionne toutes les sessions qui on pour origin la formation
+
+		$sql =  " SELECT SUM(n.note) as sum, count(n.note) as nb FROM " . MAIN_DB_PREFIX.$this->table_element ." as n ";
+		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_session as ag ON ag.rowid = n.fk_session ";
+		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_formation_catalogue as afc ON afc.rowid = ag.fk_formation_catalogue ";
+		$sql .= " WHERE ag.fk_formation_catalogue = ".(int)$fk_formation;
+
+		if ($deleteTrigged) $sql .= " AND n.rowid not in(".$this->id.")";
+
+		$resql = $this->db->query($sql);
+		if ($resql) {
+			$obj = $this->db->fetch_object($resql);
+			$this->nbLines = $obj->nb;
+			$this->sumNotation = $obj->sum;
 		}
+
+	}
+
+	/**
+	 * @param $deleteTrigged
+	 * @return void
+	 */
+	public function setAvgSessionNotation($deleteTrigged = false){
+
+		$ags = new Agsession($this->db);
+		$res  = $ags->fetch($this->fk_session);
+		if ($res >  0){
+			$ags->fetch_optionals();
+			$this->setTotalNoteSession($deleteTrigged);
+			$ags->array_options['options_average_session_notation'] =  $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;;
+			$ags->insertExtraFields();
+
+			$this->setAvgFormationNotation($deleteTrigged);
+		}
+	}
+
+
+
+	/**
+	 * @param $deleteTrigged
+	 * @return void
+	 */
+	public function setAvgFormationNotation($deleteTrigged = false){
+
+		$ags = new Agsession($this->db);
+		$res  = $ags->fetch($this->fk_session);
+		if ($res){
+			dol_include_once('/agefodd/class/agefodd_formation_catalogue.class.php');
+			// fk_formation_catalogue
+			$agf = new Formation($this->db);
+			$resFormation = $agf->fetch($ags->fk_formation_catalogue);
+
+			if ($resFormation >  0){
+				$this->setTotalNoteFormation($deleteTrigged, $ags->fk_formation_catalogue);
+				$agf->fetch_optionals();
+				$agf->array_options['options_average_formation_notation'] =  $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines, 2) : 0;;
+				$agf->insertExtraFields();
+			}
+		}
+
+
+
 	}
 }
 

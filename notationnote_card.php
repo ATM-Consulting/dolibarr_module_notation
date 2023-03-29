@@ -99,8 +99,8 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : str
 $backtopage = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
-$fk_session =  GETPOSTISSET('search_fk_session') ? GETPOST('search_fk_session','int') : GETPOST('fk_session', 'int');
-$search_fk_session = GETPOST('search_fk_session', 'int');
+$session =  GETPOST('session', 'int');
+//$search_fk_session = GETPOST('search_fk_session', 'int');
 $note = GETPOST('note','int');
 $fk_trainee = GETPOST('fk_trainee', 'int');
 $status=GETPOST('status','int');
@@ -169,7 +169,7 @@ if ($reshook < 0) {
 if (empty($reshook)) {
 	$error = 0;
 
-	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
+	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session, 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
@@ -200,8 +200,8 @@ if (empty($reshook)) {
 
 	$triggermodname = 'NOTATION_NOTATIONNOTE_MODIFY'; // Name of trigger action code to execute when we modify record
 
-	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
-	$backtopageforcancel = dol_buildpath('/notation/notationnote_list.php?search_fk_session='.$fk_session, 1);
+	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session, 1);
+	$backtopageforcancel = dol_buildpath('/notation/notationnote_list.php?session='.$session, 1);
 	$backtopage = "";
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
@@ -282,7 +282,7 @@ if ($action == 'create') {
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"] . '">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="add">';
-	print '<input type="hidden" name="fk_session" value="' . $fk_session . '">';
+	print '<input type="hidden" name="session" value="' . $session . '">';
 
 	if ($backtopage) {
 		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
@@ -323,7 +323,7 @@ if (($id || $ref) && $action == 'edit') {
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="update">';
-	print '<input type="hidden" name="fk_session" value="'.$fk_session.'">';
+	print '<input type="hidden" name="session" value="'.$session.'">';
 	print '<input type="hidden" name="fk_trainee" value="'.$object->fk_trainee.'">';
 	print '<input type="hidden" name="id" value="'.$object->id.'">';
 	if ($backtopage) {
@@ -366,11 +366,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	// Confirmation to delete
 	if ($action == 'delete') {
 		//@todo backtolist ? avec fk_session
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id."&fk_session=".$fk_session, $langs->trans('DeleteNotationNote'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id."&session=".$session, $langs->trans('DeleteNotationNote'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
 	}
 	// Confirmation to delete line
 	if ($action == 'deleteline') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid."&fk_seesion=".$fk_session, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteline', '', 0, 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid."&session=".$session, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteline', '', 0, 1);
 	}
 
 	// Clone confirmation
@@ -422,7 +422,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	// ------------------------------------------------------------
 
 	//@todo ajout le lien session
-	$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?restore_lastsearch_values=1&search_fk_session='. $fk_session .(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?restore_lastsearch_values=1&session='. $session .(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
 
 	$morehtmlref = '<div class="refidno">';
 
@@ -524,10 +524,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 				print dolGetButtonAction($langs->trans('SetToDraft'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=confirm_setdraft&confirm=yes&token='.newToken(), '', $permissiontoadd);
 			}
 
-			print dolGetButtonAction($langs->trans('Modify'), '', 'default', $_SERVER["PHP_SELF"].'?fk_session=' . $fk_session . '&id='.$object->id.'&action=edit&token='.newToken(), '', $permissiontoadd);
+			print dolGetButtonAction($langs->trans('Modify'), '', 'default', $_SERVER["PHP_SELF"].'?session=' . $session . '&id='.$object->id.'&action=edit&token='.newToken(), '', $permissiontoadd);
 
 			// Delete (need delete permission, or if draft, just need create/modify permission)
-			print dolGetButtonAction($langs->trans('Delete'), '', 'delete',  $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete&token='.newToken().'&fk_session='.$fk_session, '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
+			print dolGetButtonAction($langs->trans('Delete'), '', 'delete',  $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete&token='.newToken().'&session='.$session, '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
 		}
 		print '</div>'."\n";
 	}
