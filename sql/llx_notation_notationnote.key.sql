@@ -19,7 +19,7 @@ ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_rowid 
 ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_ref (ref);
 ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_fk_session (fk_session);
 ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_fk_trainee (fk_trainee);
-ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote2_status (status);
+
 -- END MODULEBUILDER INDEXES
 
 --ALTER TABLE llx_notation_notationnote ADD UNIQUE INDEX uk_notation_notationnote_fieldxy(fieldx, fieldy);
