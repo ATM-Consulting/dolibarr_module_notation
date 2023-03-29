@@ -117,7 +117,7 @@ class NotationNote extends CommonObject
 		'note' => array('type'=>'real', 'label'=>'note', 'enabled'=>'1', 'position'=>5, 'notnull'=>0, 'visible'=>1, 'default'=>'0', 'isameasure'=>'1', 'css'=>'maxwidth75imp', 'help'=>"", 'validate'=>'1',),
 		'fk_session' => array('type'=>'integer:Agsession:agefodd/class/agsession.class.php', 'label'=>'Session', 'picto'=>'Session', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'noteditable'=>1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'help'=>"", 'validate'=>'1',),
 		'fk_trainee' => array('type'=>'integer:Agefodd_Stagiaire:agefodd/class/agefodd_stagiaire.class.php:name::card', 'label'=>'AgfFichePresByTraineeTraineeTitleM', 'enabled'=>1, 'position'=>4, 'notnull'=>1, 'visible'=>1),
-		'status' => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>2000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=>array('0'=>'Brouillon', '1'=>'Valid&eacute;', '9'=>'Annul&eacute;'), 'validate'=>'1',),
+		//'status' => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>2000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=>array('0'=>'Brouillon', '1'=>'Valid&eacute;', '9'=>'Annul&eacute;'), 'validate'=>'1',),
 	);
 
 	public $rowid;

@@ -80,6 +80,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 dol_include_once('/agefodd/lib/agefodd.lib.php');
 dol_include_once('/agefodd/class/agsession.class.php');
+
 // load notation libraries
 require_once __DIR__.'/class/notationnote.class.php';
 
@@ -120,6 +121,7 @@ $pagenext = $page + 1;
 // Initialize technical objects
 $object = new NotationNote($db);
 $extrafields = new ExtraFields($db);
+
 $diroutputmassaction = $conf->notation->dir_output.'/temp/massgeneration/'.$user->id;
 $hookmanager->initHooks(array('notationnotelist')); // Note that conf->hooks_modules contains array
 
@@ -394,8 +396,8 @@ if ($id) {
 	$agf = new Agsession($db);
 	$result = $agf->fetch($id);
 	$head = session_prepare_head($agf);
-
-	print dol_get_fiche_head($head, 'notation', $langs->trans("Detail"), 0, '', 0,);
+	// notab zero pas de background color et -1, est-il besoin de le rappeler, donne le backgroundColor
+	dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'generic');
 
 	dol_agefodd_banner_tab($agf, 'session');
 }
@@ -476,7 +478,7 @@ $newcardbutton = '';
 $newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&fk_session='.$id.'&backtopage='.urlencode($_SERVER['PHP_SELF']).'?search_fk_session='. $id, '', $permissiontoadd);
 
 
-print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_'.$object->picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
+print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_notationnote_titre@notation', 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 // Add code for pre mass action (confirmation or email presend form)
 $topicmail = "SendNotationNoteRef";
@@ -522,7 +524,7 @@ $selectedfields = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfi
 $selectedfields .= (count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
 
 print '<div class="div-table-responsive">'; // You can use div-table-responsive-no-min if you dont need reserved height for your table
-print '<table class="tagtable nobottomiftotal liste'.($moreforfilter ? " listwithfilterbefore" : "").'">'."\n";
+print '<table class="liste tagtable nobottomiftotal '.($moreforfilter ? " listwithfilterbefore" : "").'">'."\n";
 
 
 // Fields title search
