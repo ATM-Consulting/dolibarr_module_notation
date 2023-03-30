@@ -419,7 +419,7 @@ if ($id) {
 }
 
 // notab zero pas de background color et -1, est-il besoin de le rappeler, donne le backgroundColor
-dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'generic');
+dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'');
 
 if (!empty($id))
 	dol_agefodd_banner_tab($agf, 'session',"",0);
