@@ -186,10 +186,6 @@ if (empty($reshook)) {
 	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
 
 		$error=0;
-		/*if (empty(GETPOST('fk_trainee')) || GETPOST('fk_trainee') <= 0){
-			//setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentitiesnoconv($object->fields['fk_trainee']['label'])), null, 'errors');
-			$error++;
-		}*/
 
 		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
 			setEventMessages($langs->trans('ErrorType', $langs->transnoentitiesnoconv($object->fields['note']['label'])), null, 'errors');
