@@ -116,18 +116,15 @@ class InterfaceNotationTriggers extends DolibarrTriggers
 
 			case  	'NOTATIONNOTE_CREATE':
 				$object->setAvgSessionNotation();
-				$object->setAvgFormationNotation();
 				break;
 
 			case  	'NOTATIONNOTE_MODIFY':
 				$object->setAvgSessionNotation();
-				$object->setAvgFormationNotation();
 				break;
 
 			case  	'NOTATIONNOTE_DELETE':
 				// la ligne n'est pas encore supprimée
 				$object->setAvgSessionNotation(true);
-				$object->setAvgFormationNotation(true);
 				break;
 
 

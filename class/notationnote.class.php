@@ -689,7 +689,7 @@ class NotationNote extends CommonObject
 	 *  @param  int    $session   					id of current linked session
 	 *  @return	string                              String with URL
 	 */
-	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1, $session = 0)
+	public function getNomUrl($withpicto = 0, $option = '', $notooltip = 0, $morecss = '', $save_lastsearch_value = -1, $session = '', $formation = '')
 	{
 		global $conf, $langs, $hookmanager;
 
@@ -705,8 +705,10 @@ class NotationNote extends CommonObject
 		}
 		$label .= '<br>';
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
-
-		$url = dol_buildpath('/notation/notationnote_card.php', 1).'?id='.$this->id. "&session=".$session;
+		$addLink = !empty($session) ? '&session='.$session : "";
+		$addLink .= !empty($formation) ? '&formation='.$formation : "";
+			if ($session >0	)
+		$url = dol_buildpath('/notation/notationnote_card.php', 1).'?id='.$this->id . $addLink;
 
 		if ($option != 'nolink') {
 			// Add param to save lastsearch_values or not
@@ -1585,23 +1587,59 @@ class NotationNote extends CommonObject
 				}
 			}
 			if( $label == 'Session' ){
-				$ses = GETPOST('session','int');
-				$agsession = new Agsession($db);
-				$res = $agsession->fetch($ses);
 
-				if ($res > 0 ){
-					$out = $agsession->getNomUrl(1,"",0,'ref');
-					print '<input type="hidden" name="session" value="'.$ses.'">';
+				if (GETPOSTISSET("formation")){
+
+					$sql2 = " SELECT  s.rowid as id, s.ref";
+					$sql2 .= " FROM " . MAIN_DB_PREFIX . "agefodd_session AS s ";
+					$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_formation_catalogue as afc ON s.fk_formation_catalogue = afc.rowid ";
+					$sql2 .= " WHERE afc.rowid =". (int) GETPOST("formation", "int");
+
+					$resql = $db->query($sql2);
+					$arrSessions = [];
+
+					if ($resql) {
+						while ($obj = $db->fetch_object($resql)) {
+							$arrSessions[$obj->id] = $obj->ref;
+						}
+
+					}
+					$out = $form->selectarray('search_fk_session', $arrSessions, $this->fk_session, 1);
+
+
+				}else{
+					$ses = GETPOST('session','int');
+					$agsession = new Agsession($db);
+					$res = $agsession->fetch($ses);
+					if ($res > 0 ){
+						$out = $agsession->getNomUrl(1,"",0,'ref');
+						print '<input type="hidden" name="session" value="'.$ses.'">';
+					}
 				}
 
 
+
 			}elseif ($label == 'AgfFichePresByTraineeTraineeTitleM' ) {
+
+				$link = $_SERVER['PHP_SELF'];
+				$link_array = explode('/', $link);
+				$page = end($link_array);
+
+				$selectName = ($page == 'notationnote_list.php') ? 'search_fk_trainee' : 'fk_trainee';
+
 
 
 				$sql2 = " SELECT  s.rowid as id, s.nom as nom, s.prenom as prenom";
 				$sql2 .= " FROM " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s ";
 				$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
-				$sql2 .= " WHERE ss.fk_session_agefodd =" . (int)GETPOST('session','int');
+
+				if (GETPOSTISSET("formation") && !empty(GETPOST("formation", "int"))){
+ 					$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session as ase ON ase.rowid = ss.fk_session_agefodd";
+ 					$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_formation_catalogue as afc ON afc.rowid = ase.fk_formation_catalogue";
+ 					$sql2 .= " WHERE afc.rowid =". (int) GETPOST("formation", "int");
+				}else{
+					$sql2 .= " WHERE ss.fk_session_agefodd =" . (int)GETPOST('session','int');
+				}
 
 				$resql2 = $db->query($sql2);
 				$arrStagiaires = [];
@@ -1612,10 +1650,8 @@ class NotationNote extends CommonObject
 					}
 
 				}
-				//$form = new Form($db);
-				//print '<input type="hidden" name="fk_trainee" value="'.$ses.'">';
-				$out = $form->selectarray('fk_trainee', $arrStagiaires, $this->fk_trainee, 1);
 
+				$out = $form->selectarray($selectName, $arrStagiaires, $this->fk_trainee, 1);
 
 			}else{
 				$out = $form->selectForForms($param_list[0], $keyprefix.$key.$keysuffix, $value, $showempty, '', '', $morecss, $moreparam, 0, empty($val['disabled']) ? 0 : 1);
@@ -2126,9 +2162,6 @@ class NotationNote extends CommonObject
 				$agf->insertExtraFields();
 			}
 		}
-
-
-
 	}
 }
 

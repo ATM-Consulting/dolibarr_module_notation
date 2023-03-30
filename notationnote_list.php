@@ -106,7 +106,7 @@ $mode       = GETPOST('mode', 'aZ');
 $session = GETPOST('session', 'int');
 //$search_fk_session = GETPOST('search_fk_session', 'int');
 $formation = GETPOST('formation', 'int');
-
+$search_fk_trainee = GETPOST('fk_trainee', 'int');
 // Load variable for pagination
 $limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
 $sortfield = GETPOST('sortfield', 'aZ09comma');
@@ -422,8 +422,10 @@ if ($id) {
 // notab zero pas de background color et -1, est-il besoin de le rappeler, donne le backgroundColor
 dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'generic');
 
-if (!empty($id)) dol_agefodd_banner_tab($agf, 'session');
-if (!empty($formation)) dol_agefodd_banner_tab($agf, 'formation');
+if (!empty($id))
+	dol_agefodd_banner_tab($agf, 'session',"",0);
+if (!empty($formation))
+	dol_agefodd_banner_tab($agf, 'formation', "", 0);
 
 
 $arrayofselected = is_array($toselect) ? $toselect : array();
@@ -500,6 +502,7 @@ print '<input type="hidden" name="page" value="'.$page.'">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';
 print '<input type="hidden" name="session" value="'.$session.'">';
+print '<input type="hidden" name="formation" value="'.$formation.'">';
 print '<input type="hidden" name="id" value="'.$id.'">';
 
 
@@ -509,7 +512,7 @@ $newcardbutton = '';
 //$newcardbutton .= dolGetButtonTitle($langs->trans('ViewKanban'), '', 'fa fa-th-list imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&mode=kanban'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ($mode == 'kanban' ? 2 : 1), array('morecss'=>'reposition'));
 //$newcardbutton .= dolGetButtonTitleSeparator();
 if (!empty($id))
-$newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&session='.$id.'&backtopage='.urlencode($_SERVER['PHP_SELF']).'?session='. $session, '', $permissiontoadd);
+$newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&session='.$id.'&fk_session=' . $id . '&backtopage='.urlencode($_SERVER['PHP_SELF']).'?session='. $session, '', $permissiontoadd);
 
 
 print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_notationnote_titre@notation', 0, $newcardbutton, '', $limit, 0, 0, 1);
@@ -591,31 +594,12 @@ foreach ($object->fields as $key => $val) {
 
 		} elseif ((strpos($val['type'], 'integer:') === 0) || (strpos($val['type'], 'sellist:') === 0)) {
 
-			$agsess = new Agsession($db);
-			$agsess->fetch($id);
-			$agsess->fetch_session_per_trainee($id);
-
-			if ($key == 'fk_trainee') {
-
-				$sql2 = " SELECT  s.rowid as id, s.nom as nom, s.prenom as prenom";
-				$sql2 .= " FROM " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s ";
-				$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
-				$sql2 .= " WHERE ss.fk_session_agefodd =" . (int)$id;
-
-				$resql2 = $db->query($sql2);
-				$arrStagiaires = [];
-
-				if ($resql2) {
-					while ($obj = $db->fetch_object($resql2)) {
-						$arrStagiaires[$obj->id] = $obj->nom . ' ' . $obj->prenom;
-					}
+			if ($key == 'fk_session'){
+				if (!empty($formation)){
+					print $object->showInputField($val, $key, (isset($search[$key]) ? $search[$key] : ''), '', '', 'search_', $cssforfield.' maxwidth250', 1);
 				}
-				$form = new Form($db);
-				print $form->selectarray('search_fk_trainee', $arrStagiaires,'fk_trainee',1);
 			}else{
-
-				//print $object->showInputField($val, $key, (isset($search[$key]) ? $search[$key] : ''), '', '', 'search_', $cssforfield.' maxwidth250', 1);
-
+				print $object->showInputField($val, $key, (isset($search[$key]) ? $search[$key] : ''), '', '', 'search_', $cssforfield.' maxwidth250', 1);
 			}
 
 
@@ -791,7 +775,10 @@ while ($i < $imaxinloop) {
 						print $agf->getNomUrl(1,"",0,'ref');
 					}
 				}else if ($key == 'ref') {
-					print $object->getNomUrl(1,"",1,"",-1, $session);
+					if ($formation){
+						$addValue = "&formation=".$formation;
+					}
+					print $object->getNomUrl(1,"",1,"",-1, (empty($session)) ? $object->fk_session : $session, $formation);
 				}else{
 					print $object->showOutputField($val, $key, $object->$key, '');
 				}

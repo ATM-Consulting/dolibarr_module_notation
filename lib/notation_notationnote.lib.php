@@ -27,7 +27,7 @@
  * @param	NotationNote	$object		NotationNote
  * @return 	array					Array of tabs
  */
-function notationnotePrepareHead($object)
+function notationnotePrepareHead($object,$session = "",$formation = "")
 {
 	global $db, $langs, $conf;
 
@@ -40,8 +40,13 @@ function notationnotePrepareHead($object)
 
 	$h = 0;
 	$head = array();
-
-	$head[$h][0] = dol_buildpath("/notation/notationnote_card.php", 1).'?id='.$object->id;
+	$addParams = "";
+	if (!empty($formation)){
+		$addParams = "&formation=".$formation;
+	}else {
+		$addParams = "&session=".$session;
+	}
+	$head[$h][0] = dol_buildpath("/notation/notationnote_card.php", 1).'?id='.$object->id. $addParams;
 	$head[$h][1] = $langs->trans("Card");
 	$head[$h][2] = 'card';
 	$h++;
