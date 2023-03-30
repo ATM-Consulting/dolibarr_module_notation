@@ -117,6 +117,7 @@ class NotationNote extends CommonObject
 		'note' => array('type'=>'real', 'label'=>'note', 'enabled'=>'1', 'position'=>5, 'notnull'=>0, 'visible'=>1, 'default'=>'0', 'isameasure'=>'1', 'css'=>'maxwidth75imp', 'help'=>"", 'validate'=>'1',),
 		'fk_session' => array('type'=>'integer:Agsession:agefodd/class/agsession.class.php', 'label'=>'Session', 'picto'=>'Session', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'noteditable'=>1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'help'=>"", 'validate'=>'1',),
 		'fk_trainee' => array('type'=>'integer:Agefodd_Stagiaire:agefodd/class/agefodd_stagiaire.class.php:name::card', 'label'=>'AgfFichePresByTraineeTraineeTitleM', 'enabled'=>1, 'position'=>4, 'notnull'=>1, 'visible'=>1),
+		'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>'1', 'position'=>20, 'notnull'=>1, 'visible'=>0, 'default'=>'1', 'index'=>1,),
 		//'status' => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>2000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=>array('0'=>'Brouillon', '1'=>'Valid&eacute;', '9'=>'Annul&eacute;'), 'validate'=>'1',),
 	);
 
@@ -126,6 +127,7 @@ class NotationNote extends CommonObject
 	public $fk_session;
 	public $fk_trainee;
 	public $status;
+	public $entity;
 
 	public $nbLines;
 	public $sumNotation;
@@ -341,6 +343,61 @@ class NotationNote extends CommonObject
 			$this->fetchLines();
 		}
 		return $result;
+	}
+
+	/**
+	 * @param $idSession
+	 * @return void
+	 */
+	public function fetchAllByTraining($idTraining){
+
+		//$sql =  " SELECT n.rowid as noteId, n.note AS notation, n.fk_session, n.fk_trainee, afc.rowid as TrainingId, n.entity ";
+		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ag.ref as ref_session,";
+		$sql  .=" n.fk_trainee as id_trainee, s.nom as nom, s.prenom as prenom, afc.rowid as id_training, afc.ref as ref_training, n.entity ";
+ 		$sql .=" FROM " . MAIN_DB_PREFIX.$this->table_element ." as n ";
+		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_session as ag ON ag.rowid = n.fk_session ";
+		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s on s.rowid = n.fk_trainee ";
+		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_formation_catalogue as afc ON afc.rowid = ag.fk_formation_catalogue ";
+		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
+		$sql .= " WHERE ag.fk_formation_catalogue = ".(int) $idTraining;
+		$sql .= " AND n.entity IN (".getEntity('notation').")";
+
+		$resql = $this->db->query($sql);
+		$Tnotations = [];
+		if ($resql){
+
+			while ($obj = $this->db->fetch_object($resql)){
+					$Tnotations[] =$obj;
+			}
+
+		}
+		return $Tnotations;
+	}
+
+
+	/**
+	 * @param $idSession
+	 * @return void
+	 */
+	public function fetchAllBySession($idSession){
+
+		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ass.ref as ref_session,   n.fk_trainee as id_trainee, s.nom as nom, s.prenom as prenom,  n.entity";
+		$sql  .=" FROM ".MAIN_DB_PREFIX .$this->table_element ." as n" ;
+		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s on s.rowid = n.fk_trainee ";
+		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
+		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session as ass ON ass.rowid = n.fk_session ";
+		$sql .= " WHERE n.fk_session=" . (int) $idSession;
+		$sql .= " AND n.entity IN (".getEntity('notation').")";
+		$resql = $this->db->query($sql);
+		$Tnotations = [];
+		if ($resql){
+
+			while ($obj = $this->db->fetch_object($resql)){
+				$Tnotations[] =$obj;
+			}
+
+		}
+		return $Tnotations;
 	}
 
 	/**
