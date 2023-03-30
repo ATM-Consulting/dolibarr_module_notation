@@ -474,12 +474,7 @@ $reshook = $hookmanager->executeHooks('printFieldListSearchParam', $parameters, 
 $param .= $hookmanager->resPrint;
 
 // List of mass actions available
-$arrayofmassactions = array(
-	//'validate'=>img_picto('', 'check', 'class="pictofixedwidth"').$langs->trans("Validate"),
-	//'generate_doc'=>img_picto('', 'pdf', 'class="pictofixedwidth"').$langs->trans("ReGeneratePDF"),
-	//'builddoc'=>img_picto('', 'pdf', 'class="pictofixedwidth"').$langs->trans("PDFMerge"),
-	//'presend'=>img_picto('', 'email', 'class="pictofixedwidth"').$langs->trans("SendByMail"),
-);
+$arrayofmassactions = array();
 if (!empty($permissiontodelete)) {
 	$arrayofmassactions['predelete'] = img_picto('', 'delete', 'class="pictofixedwidth"').$langs->trans("Delete");
 }
@@ -507,9 +502,6 @@ print '<input type="hidden" name="id" value="'.$id.'">';
 
 
 $newcardbutton = '';
-//$newcardbutton .= dolGetButtonTitle($langs->trans('ViewList'), '', 'fa fa-bars imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&token='.newToken().'&mode=common'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ((empty($mode) || $mode == 'common') ? 2 : 1), array('morecss'=>'reposition'));
-//$newcardbutton .= dolGetButtonTitle($langs->trans('ViewKanban'), '', 'fa fa-th-list imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&mode=kanban'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ($mode == 'kanban' ? 2 : 1), array('morecss'=>'reposition'));
-//$newcardbutton .= dolGetButtonTitleSeparator();
 if (!empty($id))
 $newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&session='.$id.'&fk_session=' . $id . '&backtopage='.urlencode($_SERVER['PHP_SELF']).'?session='. $session, '', $permissiontoadd);
 
@@ -523,7 +515,6 @@ $objecttmp = new NotationNote($db);
 $trackid = 'xxxx'.$object->id;
 
 
-//var_dump($resultAll);
 include DOL_DOCUMENT_ROOT.'/core/tpl/massactions_pre.tpl.php';
 
 if ($search_all) {
@@ -537,9 +528,6 @@ if ($search_all) {
 }
 
 $moreforfilter = '';
-/*$moreforfilter.='<div class="divsearchfield">';
-$moreforfilter.= $langs->trans('MyFilter') . ': <input type="text" name="search_myfield" value="'.dol_escape_htmltag($search_myfield).'">';
-$moreforfilter.= '</div>';*/
 
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldPreListTitle', $parameters, $object); // Note that $action and $object may have been modified by hook
@@ -849,7 +837,6 @@ $db->free($resql);
 
 $parameters = array('arrayfields'=>$arrayfields, 'sql'=>$sql);
 $reshook = $hookmanager->executeHooks('printFieldListFooter', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
-//print $hookmanager->resPrint;
 
 print '</table>'."\n";
 print '</div>'."\n";
