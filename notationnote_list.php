@@ -104,7 +104,6 @@ $backtopage = GETPOST('backtopage', 'alpha'); // Go back to a dedicated page
 $optioncss  = GETPOST('optioncss', 'aZ'); // Option for the css output (always '' except when 'print')
 $mode       = GETPOST('mode', 'aZ');
 $session = GETPOST('session', 'int');
-//$search_fk_session = GETPOST('search_fk_session', 'int');
 $formation = GETPOST('formation', 'int');
 $search_fk_trainee = GETPOST('fk_trainee', 'int');
 // Load variable for pagination
