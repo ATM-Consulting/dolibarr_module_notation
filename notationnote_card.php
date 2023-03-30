@@ -102,7 +102,6 @@ $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
 $session =  GETPOST('session', 'int');
 $fk_session =  GETPOST('fk_session', 'int');
 $formation =  GETPOST('formation', 'int');
-//$search_fk_session = GETPOST('search_fk_session', 'int');
 $note = GETPOST('note','int');
 $fk_trainee = GETPOST('fk_trainee', 'int');
 $status=GETPOST('status','int');
