@@ -351,7 +351,6 @@ class NotationNote extends CommonObject
 	 */
 	public function fetchAllByTraining($idTraining){
 
-		//$sql =  " SELECT n.rowid as noteId, n.note AS notation, n.fk_session, n.fk_trainee, afc.rowid as TrainingId, n.entity ";
 		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ag.ref as ref_session,";
 		$sql  .=" n.fk_trainee as id_trainee, s.nom as nom, s.prenom as prenom, afc.rowid as id_training, afc.ref as ref_training, n.entity ";
  		$sql .=" FROM " . MAIN_DB_PREFIX.$this->table_element ." as n ";
@@ -1670,7 +1669,7 @@ class NotationNote extends CommonObject
 					$res = $agsession->fetch($ses);
 					if ($res > 0 ){
 						$out = $agsession->getNomUrl(1,"",0,'ref');
-						print '<input type="hidden" name="session" value="'.$ses.'">';
+//						print '<input type="hidden" name="session" value="'.$ses.'">';
 					}
 				}
 
@@ -2158,15 +2157,18 @@ class NotationNote extends CommonObject
 	 * @param $deleteTrigged
 	 * @return void
 	 */
-	public function setTotalNoteFormation($deleteTrigged = false, $fk_formation){
+	public function getTotalNote($deleteTrigged = false, $fk_formation = ""){
 
-		// on selectionne toutes les sessions qui on pour origin la formation
+		// on selectionne toutes les sessions qui on pour origin la formation ou la session
 
 		$sql =  " SELECT SUM(n.note) as sum, count(n.note) as nb FROM " . MAIN_DB_PREFIX.$this->table_element ." as n ";
-		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_session as ag ON ag.rowid = n.fk_session ";
-		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_formation_catalogue as afc ON afc.rowid = ag.fk_formation_catalogue ";
-		$sql .= " WHERE ag.fk_formation_catalogue = ".(int)$fk_formation;
-
+		if (!empty($fk_formation)){
+			$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_session as ag ON ag.rowid = n.fk_session ";
+			$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_formation_catalogue as afc ON afc.rowid = ag.fk_formation_catalogue ";
+			$sql .= " WHERE ag.fk_formation_catalogue = ".(int)$fk_formation;
+		}else{
+			$sql .= " WHERE fk_session=".(int)$this->fk_session;
+		}
 		if ($deleteTrigged) $sql .= " AND n.rowid not in(".$this->id.")";
 
 		$resql = $this->db->query($sql);
@@ -2188,7 +2190,7 @@ class NotationNote extends CommonObject
 		$res  = $ags->fetch($this->fk_session);
 		if ($res >  0){
 			$ags->fetch_optionals();
-			$this->setTotalNoteSession($deleteTrigged);
+			$this->getTotalNote($deleteTrigged);
 			$ags->array_options['options_average_session_notation'] =  $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines,2) : 0;;
 			$ags->insertExtraFields();
 
@@ -2208,12 +2210,11 @@ class NotationNote extends CommonObject
 		$res  = $ags->fetch($this->fk_session);
 		if ($res){
 			dol_include_once('/agefodd/class/agefodd_formation_catalogue.class.php');
-			// fk_formation_catalogue
 			$agf = new Formation($this->db);
 			$resFormation = $agf->fetch($ags->fk_formation_catalogue);
 
 			if ($resFormation >  0){
-				$this->setTotalNoteFormation($deleteTrigged, $ags->fk_formation_catalogue);
+				$this->getTotalNote($deleteTrigged, $ags->fk_formation_catalogue);
 				$agf->fetch_optionals();
 				$agf->array_options['options_average_formation_notation'] =  $this->nbLines > 0 ? number_format((float )$this->sumNotation / $this->nbLines, 2) : 0;;
 				$agf->insertExtraFields();

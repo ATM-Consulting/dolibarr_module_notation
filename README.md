@@ -2,7 +2,7 @@
 
 ## Features
 
-Description of the module...
+Module greffon pour le module **Agefodd** permettant d'ajouter un système de notation aux sessions
 
 <!--
 ![Screenshot notation](img/screenshot_notation.png?raw=true "Notation"){imgmd}
@@ -75,7 +75,7 @@ From your browser:
 
 -->
 
-## Licenses
+
 
 ### Main code
 

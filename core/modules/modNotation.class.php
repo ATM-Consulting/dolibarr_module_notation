@@ -266,24 +266,24 @@ class modNotation extends DolibarrModules
 		//    0=>array('label'=>'My label', 'jobtype'=>'method', 'class'=>'/dir/class/file.class.php', 'objectname'=>'MyClass', 'method'=>'myMethod', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>2, 'unitfrequency'=>3600, 'status'=>0, 'test'=>'$conf->notation->enabled', 'priority'=>50),
 		//    1=>array('label'=>'My label', 'jobtype'=>'command', 'command'=>'', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>1, 'unitfrequency'=>3600*24, 'status'=>0, 'test'=>'$conf->notation->enabled', 'priority'=>50)
 		// );
-
+		$langs->load("notation@notation");
 		// Permissions provided by this module
 		$this->rights = array();
 		$r = 0;
 		// Add here entries to declare new permissions
 		/* BEGIN MODULEBUILDER PERMISSIONS */
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Read objects of Notation'; // Permission label
+		$this->rights[$r][1] = $langs->trans('readObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Create/Update objects of Notation'; // Permission label
+		$this->rights[$r][1] = $langs->trans('CreateUpdateObj') ; // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Delete objects of Notation'; // Permission label
+		$this->rights[$r][1] = $langs->trans('deleteObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->delete)
 		$r++;
