@@ -1660,7 +1660,11 @@ class NotationNote extends CommonObject
 						}
 
 					}
-					$out = $form->selectarray('search_fk_session', $arrSessions, $this->fk_session, 1);
+					$filter = GETPOST('search_fk_session');
+					if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
+						$filter = "";
+					}
+					$out = $form->selectarray('search_fk_session', $arrSessions, $filter, 1);
 
 
 				}else{
@@ -1706,8 +1710,11 @@ class NotationNote extends CommonObject
 					}
 
 				}
-
-				$out = $form->selectarray($selectName, $arrStagiaires, $this->fk_trainee, 1);
+				$filter = GETPOST('search_fk_trainee');
+				if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
+					$filter = "";
+				}
+				$out = $form->selectarray($selectName, $arrStagiaires, $filter , 1);
 
 			}else{
 				$out = $form->selectForForms($param_list[0], $keyprefix.$key.$keysuffix, $value, $showempty, '', '', $morecss, $moreparam, 0, empty($val['disabled']) ? 0 : 1);
@@ -2138,25 +2145,6 @@ class NotationNote extends CommonObject
 	 * @param $deleteTrigged
 	 * @return void
 	 */
-	public function setTotalNoteSession($deleteTrigged = false){
-
-		$sql = "SELECT SUM(note) as sum, count(note) as nb FROM ".MAIN_DB_PREFIX.$this->table_element." WHERE fk_session=".(int)$this->fk_session;
-		if ($deleteTrigged)#
-			$sql .= " AND rowid not in(".$this->id.")";
-
-		$resql = $this->db->query($sql);
-		if ($resql) {
-				$obj = $this->db->fetch_object($resql);
-				$this->nbLines = $obj->nb;
-				$this->sumNotation = $obj->sum;
-		}
-
-	}
-
-	/**
-	 * @param $deleteTrigged
-	 * @return void
-	 */
 	public function getTotalNote($deleteTrigged = false, $fk_formation = ""){
 
 		// on selectionne toutes les sessions qui on pour origin la formation ou la session
@@ -2197,7 +2185,6 @@ class NotationNote extends CommonObject
 			$this->setAvgFormationNotation($deleteTrigged);
 		}
 	}
-
 
 
 	/**

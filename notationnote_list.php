@@ -238,6 +238,7 @@ if (empty($reshook)) {
 				$search[$key.'_dtstart'] = '';
 				$search[$key.'_dtend'] = '';
 			}
+
 		}
 		$toselect = array();
 		$search_array_options = array();
