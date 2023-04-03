@@ -298,7 +298,9 @@ class Notation extends DolibarrApi
 
 		// Clean data
 		// $this->notationnote->abc = sanitizeVal($this->notationnote->abc, 'alphanohtml');
-
+		//
+		$newRef =  $this->notationnote->getNextNumRef() ;
+		$this->notationnote->ref = $newRef;
 		if ($this->notationnote->create(DolibarrApiAccess::$user)<0) {
 			throw new RestException(500, "Error creating NotationNote", array_merge(array($this->notationnote->error), $this->notationnote->errors));
 		}
