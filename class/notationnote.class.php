@@ -763,7 +763,7 @@ class NotationNote extends CommonObject
 		$label .= '<b>'.$langs->trans('Ref').':</b> '.$this->ref;
 		$addLink = !empty($session) ? '&session='.$session : "";
 		$addLink .= !empty($formation) ? '&formation='.$formation : "";
-			if ($session >0	)
+			if ($session > 0 || $formation > 0)
 		$url = dol_buildpath('/notation/notationnote_card.php', 1).'?id='.$this->id . $addLink;
 
 		if ($option != 'nolink') {
