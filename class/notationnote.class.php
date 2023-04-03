@@ -2143,6 +2143,7 @@ class NotationNote extends CommonObject
 
 	/**
 	 * @param $deleteTrigged
+	 * @param $fk_formation
 	 * @return void
 	 */
 	public function getTotalNote($deleteTrigged = false, $fk_formation = ""){

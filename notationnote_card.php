@@ -169,8 +169,8 @@ if ($reshook < 0) {
 
 if (empty($reshook)) {
 	$error = 0;
-
-	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session, 1);
+	$addLink = (!empty($formation)) ?  "&formation=" . $formation : "";
+	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
