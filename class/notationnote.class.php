@@ -347,7 +347,7 @@ class NotationNote extends CommonObject
 
 	/**
 	 * @param int $idTraining
-	 * @return void
+	 * @return array
 	 */
 	public function fetchAllByTraining($idTraining){
 
