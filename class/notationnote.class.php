@@ -376,7 +376,7 @@ class NotationNote extends CommonObject
 
 	/**
 	 * @param $idSession
-	 * @return void
+	 * @return array
 	 */
 	public function fetchAllBySession($idSession){
 
