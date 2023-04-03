@@ -20,5 +20,5 @@ CREATE TABLE llx_notation_notationnote(
     note float default 0,
 	fk_session integer,
 	fk_trainee integer,
-    status integer NOT NULL
+    entity integer NOT NULL DEFAULT 1
 ) ENGINE=innodb;

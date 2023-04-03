@@ -55,7 +55,6 @@ global $langs, $user;
 // Libraries
 require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
 require_once '../lib/notation.lib.php';
-//require_once "../class/myclass.class.php";
 
 // Translations
 $langs->loadLangs(array("admin", "notation@notation"));
@@ -76,7 +75,7 @@ $modulepart = GETPOST('modulepart', 'aZ09');	// Used by actions_setmoduleoptions
 $value = GETPOST('value', 'alpha');
 $label = GETPOST('label', 'alpha');
 $scandir = GETPOST('scan_dir', 'alpha');
-$type = 'myobject';
+$type = 'notationnote';
 
 
 $error = 0;

@@ -19,22 +19,35 @@
 
 # Module label 'ModuleNotationName'
 ModuleNotationName = Notation
+NotationDescription=Module greffon pour Agefodd permettant d'ajouter un système de notation aux sessions
 # Module description 'ModuleNotationDesc'
-ModuleNotationDesc = Module greffon pour Agefodd permettant d'ajouter un système de notation aux sessions
+ModuleNotationDesc=Module greffon pour Agefodd permettant d'ajouter un système de notation aux sessions
 NotationNotes=Notes
 
 #
 # Admin page
 #
 Settings = Configuration
-
+NotationSetup=Module Notation configuration
 #
 # About page
 #
 About = À propos
-
+NotationAbout= Module notation à propos
 #
 # CONF
 #
 MIN_NOTATION=Note minimale
 MAX_NOTATION=Note maximale
+
+#
+# error
+#
+ErrorType=La valeur du champs note doit être du type numérique, doit être comprise entre les valeurs définies dans l'administration du module Notation (min - max ).
+
+#
+# Rights
+#
+readObj=Lire les notations
+CreateUpdateObj=Créer ou mettre à jour une notation
+deleteObj=Supprimer une notation

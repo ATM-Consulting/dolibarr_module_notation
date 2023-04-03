@@ -68,11 +68,11 @@ class modNotation extends DolibarrModules
 		$this->descriptionlong = "NotationDescription";
 
 		// Author
-		$this->editor_name = 'Editor name';
-		$this->editor_url = 'https://www.example.com';
+		$this->editor_name = 'ATM-CONSULTING';
+		$this->editor_url = 'https://www.atm-consulting.fr';
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.0';
+		$this->version = '1.0.0';
 		// Url to the file with your last numberversion of this module
 		//$this->url_last_version = 'http://www.example.com/versionmodule.txt';
 
@@ -89,7 +89,7 @@ class modNotation extends DolibarrModules
 		// Define some features supported by module (triggers, login, substitutions, menus, css, etc...)
 		$this->module_parts = array(
 			// Set this to 1 if module has its own trigger directory (core/triggers)
-			'triggers' => 0,
+			'triggers' => 1,
 			// Set this to 1 if module has its own login method file (core/login)
 			'login' => 0,
 			// Set this to 1 if module has its own substitution function file (core/substitutions)
@@ -174,7 +174,11 @@ class modNotation extends DolibarrModules
 
 		// Array to add new pages in new tabs
 		$this->tabs = array();
-		$this->tabs[] = array('data' => 'agefodd_session:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?search_fk_session=__ID__');
+		// ligne vers session tab
+		$this->tabs[] = array('data' => 'agefodd_session:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?session=__ID__');
+		// ligne vers formation tab
+		$this->tabs[] = array('data' => 'agefodd_training:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?formation=__ID__');
+
 		// Example:
 		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@notation:$user->rights->notation->read:/notation/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
 		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@notation:$user->rights->othermodule->read:/notation/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
@@ -262,24 +266,24 @@ class modNotation extends DolibarrModules
 		//    0=>array('label'=>'My label', 'jobtype'=>'method', 'class'=>'/dir/class/file.class.php', 'objectname'=>'MyClass', 'method'=>'myMethod', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>2, 'unitfrequency'=>3600, 'status'=>0, 'test'=>'$conf->notation->enabled', 'priority'=>50),
 		//    1=>array('label'=>'My label', 'jobtype'=>'command', 'command'=>'', 'parameters'=>'param1, param2', 'comment'=>'Comment', 'frequency'=>1, 'unitfrequency'=>3600*24, 'status'=>0, 'test'=>'$conf->notation->enabled', 'priority'=>50)
 		// );
-
+		$langs->load("notation@notation");
 		// Permissions provided by this module
 		$this->rights = array();
 		$r = 0;
 		// Add here entries to declare new permissions
 		/* BEGIN MODULEBUILDER PERMISSIONS */
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Read objects of Notation'; // Permission label
+		$this->rights[$r][1] = $langs->trans('readObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->read)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Create/Update objects of Notation'; // Permission label
+		$this->rights[$r][1] = $langs->trans('CreateUpdateObj') ; // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->write)
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = 'Delete objects of Notation'; // Permission label
+		$this->rights[$r][1] = $langs->trans('deleteObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->delete)
 		$r++;
@@ -370,7 +374,10 @@ class modNotation extends DolibarrModules
 
 		// Create extrafields during init
 		//include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-		//$extrafields = new ExtraFields($this->db);
+		$extrafields = new ExtraFields($this->db);
+		$res1 = $extrafields->addExtraField('average_session_notation', 'Moyenne', 'float', 100, '', 'agefodd_session', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
+		$res2 = $extrafields->addExtraField('average_formation_notation', 'Moyenne', 'float', 100, '', 'agefodd_formation_catalogue', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
+
 		//$result1=$extrafields->addExtraField('notation_myattr1', "New Attr 1 label", 'boolean', 1,  3, 'thirdparty',   0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
 		//$result2=$extrafields->addExtraField('notation_myattr2', "New Attr 2 label", 'varchar', 1, 10, 'project',      0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
 		//$result3=$extrafields->addExtraField('notation_myattr3', "New Attr 3 label", 'varchar', 1, 10, 'bank_account', 0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');

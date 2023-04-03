@@ -80,6 +80,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
 dol_include_once('/agefodd/lib/agefodd.lib.php');
 dol_include_once('/agefodd/class/agsession.class.php');
+dol_include_once('/agefodd/class/agefodd_formation_catalogue.class.php');
 // load notation libraries
 require_once __DIR__.'/class/notationnote.class.php';
 
@@ -89,7 +90,7 @@ require_once __DIR__.'/class/notationnote.class.php';
 // Load translation files required by the page
 $langs->loadLangs(array("notation@notation", "other"));
 
-$id = GETPOSTISSET('id') ?  GETPOST('id', 'int') : GETPOST('search_fk_session', 'int');
+$id = GETPOSTISSET('id') ?  GETPOST('id', 'int') : GETPOST('session', 'int');
 $ref = GETPOST('ref', 'alpha');
 
 $action     = GETPOST('action', 'aZ09') ?GETPOST('action', 'aZ09') : 'view'; // The action 'add', 'create', 'edit', 'update', 'view', ...
@@ -102,12 +103,15 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : str
 $backtopage = GETPOST('backtopage', 'alpha'); // Go back to a dedicated page
 $optioncss  = GETPOST('optioncss', 'aZ'); // Option for the css output (always '' except when 'print')
 $mode       = GETPOST('mode', 'aZ');
-
+$session = GETPOST('session', 'int');
+$formation = GETPOST('formation', 'int');
+$search_fk_trainee = GETPOST('fk_trainee', 'int');
 // Load variable for pagination
 $limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
 $sortfield = GETPOST('sortfield', 'aZ09comma');
 $sortorder = GETPOST('sortorder', 'aZ09comma');
 $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
+
 if (empty($page) || $page < 0 || GETPOST('button_search', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
 	// If $page is not defined, or '' or -1 or if we click on clear filters
 	$page = 0;
@@ -119,6 +123,7 @@ $pagenext = $page + 1;
 // Initialize technical objects
 $object = new NotationNote($db);
 $extrafields = new ExtraFields($db);
+
 $diroutputmassaction = $conf->notation->dir_output.'/temp/massgeneration/'.$user->id;
 $hookmanager->initHooks(array('notationnotelist')); // Note that conf->hooks_modules contains array
 
@@ -182,7 +187,7 @@ $arrayfields = dol_sort_array($arrayfields, 'position');
 
 // There is several ways to check permission.
 // Set $enablepermissioncheck to 1 to enable a minimum low level of checks
-$enablepermissioncheck = 0;
+$enablepermissioncheck = 1;
 if ($enablepermissioncheck) {
 	$permissiontoread = $user->rights->notation->notationnote->read;
 	$permissiontoadd = $user->rights->notation->notationnote->write;
@@ -233,6 +238,7 @@ if (empty($reshook)) {
 				$search[$key.'_dtstart'] = '';
 				$search[$key.'_dtend'] = '';
 			}
+
 		}
 		$toselect = array();
 		$search_array_options = array();
@@ -287,6 +293,12 @@ $sql .= " FROM ".MAIN_DB_PREFIX.$object->table_element." as t";
 if (isset($extrafields->attributes[$object->table_element]['label']) && is_array($extrafields->attributes[$object->table_element]['label']) && count($extrafields->attributes[$object->table_element]['label'])) {
 	$sql .= " LEFT JOIN ".MAIN_DB_PREFIX.$object->table_element."_extrafields as ef on (t.rowid = ef.fk_object)";
 }
+
+if (!empty($formation)){
+	$sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'agefodd_session as s ';
+	$sql.= 'ON s.rowid=t.fk_session ';
+}
+
 // Add table from hooks
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListFrom', $parameters, $object); // Note that $action and $object may have been modified by hook
@@ -336,47 +348,18 @@ $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldListWhere', $parameters, $object); // Note that $action and $object may have been modified by hook
 $sql .= $hookmanager->resPrint;
 
-/* If a group by is required
-$sql .= " GROUP BY ";
-foreach($object->fields as $key => $val) {
-	$sql .= "t.".$db->escape($key).", ";
+if (!empty($formation)){
+	$sql .= ' AND s.fk_formation_catalogue='.$formation;
 }
-// Add fields from extrafields
-if (!empty($extrafields->attributes[$object->table_element]['label'])) {
-	foreach ($extrafields->attributes[$object->table_element]['label'] as $key => $val) {
-		$sql .= ($extrafields->attributes[$object->table_element]['type'][$key] != 'separate' ? "ef.".$key.', ' : '');
-	}
-}
-// Add where from hooks
-$parameters = array();
-$reshook = $hookmanager->executeHooks('printFieldListGroupBy', $parameters, $object);    // Note that $action and $object may have been modified by hook
-$sql .= $hookmanager->resPrint;
-$sql = preg_replace('/,\s*$/', '', $sql);
-*/
 
-// Add HAVING from hooks
-/*
-$parameters = array();
-$reshook = $hookmanager->executeHooks('printFieldListHaving', $parameters, $object); // Note that $action and $object may have been modified by hook
-$sql .= empty($hookmanager->resPrint) ? "" : " HAVING 1=1 ".$hookmanager->resPrint;
-*/
+if (!empty($session)){
+	$sql .= ' AND t.fk_session='.$session;
+}
 
 // Count total nb of records
 $nbtotalofrecords = '';
 if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST)) {
-	/* This old and fast method to get and count full list returns all record so use a high amount of memory.
-	$resql = $db->query($sql);
-	$nbtotalofrecords = $db->num_rows($resql);
-	*/
-	/* The slow method does not consume memory on mysql (not tested on pgsql) */
-	/*$resql = $db->query($sql, 0, 'auto', 1);
-	while ($db->fetch_object($resql)) {
-		if (empty($nbtotalofrecords)) {
-			$nbtotalofrecords = 1;    // We can't make +1 because init value is ''
-		 } else {
-			 $nbtotalofrecords++;
-		 }
-	 }*/
+
 	/* The fast and low memory method to get and count full list converts the sql into a sql count */
 	$sqlforcount = preg_replace('/^SELECT[a-zA-Z0-9\._\s\(\),=<>\:\-\']+\sFROM/', 'SELECT COUNT(*) as nbtotalofrecords FROM', $sql);
 	$resql = $db->query($sqlforcount);
@@ -420,7 +403,6 @@ if ($num == 1 && !empty($conf->global->MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE) && $
 
 // Output page
 // --------------------------------------------------------------------
-//llxHeader('', $langs->trans("AgfSessionDetail"), '', '', '', '', array('/agefodd/includes/lib.js','/agefodd/js/session_card.js'), array());
 llxHeader('', $title, $help_url, '', 0, 0, '', '', '', '',[],1,1);
 
 
@@ -429,12 +411,34 @@ if ($id) {
 	$agf = new Agsession($db);
 	$result = $agf->fetch($id);
 	$head = session_prepare_head($agf);
+
+
+}elseif ($formation){
+	$agf = new Formation($db);
+	$agf->fetch($formation);
+	$head = training_prepare_head($agf);
 }
-print dol_get_fiche_head($head, 'notation', $langs->trans("Detail"), 0, '',0,);
+
+// notab zero pas de background color et -1, est-il besoin de le rappeler, donne le backgroundColor
+dol_fiche_head($head, 'notation', $langs->trans("Detail"), -1, '', 0,'');
+
+if (!empty($id))
+	dol_agefodd_banner_tab($agf, 'session',"",0);
+if (!empty($formation))
+	dol_agefodd_banner_tab($agf, 'formation', "", 0);
+
 
 $arrayofselected = is_array($toselect) ? $toselect : array();
 
-$param = '';
+$param = '&id='.$id;
+
+if (!empty($formation)){
+	$param .= '&formation='.$formation;
+}
+if (!empty($session)){
+	$param .= '&session='.$session;
+}
+
 if (!empty($mode)) {
 	$param .= '&mode='.urlencode($mode);
 }
@@ -444,6 +448,7 @@ if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) {
 if ($limit > 0 && $limit != $conf->liste_limit) {
 	$param .= '&limit='.urlencode($limit);
 }
+
 foreach ($search as $key => $val) {
 	if (is_array($search[$key])) {
 		foreach ($search[$key] as $skey) {
@@ -470,12 +475,7 @@ $reshook = $hookmanager->executeHooks('printFieldListSearchParam', $parameters, 
 $param .= $hookmanager->resPrint;
 
 // List of mass actions available
-$arrayofmassactions = array(
-	//'validate'=>img_picto('', 'check', 'class="pictofixedwidth"').$langs->trans("Validate"),
-	//'generate_doc'=>img_picto('', 'pdf', 'class="pictofixedwidth"').$langs->trans("ReGeneratePDF"),
-	//'builddoc'=>img_picto('', 'pdf', 'class="pictofixedwidth"').$langs->trans("PDFMerge"),
-	//'presend'=>img_picto('', 'email', 'class="pictofixedwidth"').$langs->trans("SendByMail"),
-);
+$arrayofmassactions = array();
 if (!empty($permissiontodelete)) {
 	$arrayofmassactions['predelete'] = img_picto('', 'delete', 'class="pictofixedwidth"').$langs->trans("Delete");
 }
@@ -496,22 +496,26 @@ print '<input type="hidden" name="sortorder" value="'.$sortorder.'">';
 print '<input type="hidden" name="page" value="'.$page.'">';
 print '<input type="hidden" name="contextpage" value="'.$contextpage.'">';
 print '<input type="hidden" name="mode" value="'.$mode.'">';
+print '<input type="hidden" name="session" value="'.$session.'">';
+print '<input type="hidden" name="formation" value="'.$formation.'">';
 print '<input type="hidden" name="id" value="'.$id.'">';
 
 
 
-/*$newcardbutton = '';
-$newcardbutton .= dolGetButtonTitle($langs->trans('ViewList'), '', 'fa fa-bars imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&token='.newToken().'&mode=common'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ((empty($mode) || $mode == 'common') ? 2 : 1), array('morecss'=>'reposition'));
-$newcardbutton .= dolGetButtonTitle($langs->trans('ViewKanban'), '', 'fa fa-th-list imgforviewmode', $_SERVER["PHP_SELF"].'?id='.$id.'&mode=kanban'.preg_replace('/(&|\?)*mode=[^&]+/', '', $param), '', ($mode == 'kanban' ? 2 : 1), array('morecss'=>'reposition'));
-$newcardbutton .= dolGetButtonTitleSeparator();*/
+$newcardbutton = '';
+if (!empty($id))
+$newcardbutton .= dolGetButtonTitle($langs->trans('New'), '', 'fa fa-plus-circle', dol_buildpath('/notation/notationnote_card.php', 1).'?action=create&session='.$id.'&fk_session=' . $id . '&backtopage='.urlencode($_SERVER['PHP_SELF']).'?session='. $session, '', $permissiontoadd);
 
-print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_'.$object->picto, 0, '', '', $limit);
+
+print_barre_liste($title, $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'object_notationnote_titre@notation', 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 // Add code for pre mass action (confirmation or email presend form)
 $topicmail = "SendNotationNoteRef";
 $modelmail = "notationnote";
 $objecttmp = new NotationNote($db);
 $trackid = 'xxxx'.$object->id;
+
+
 include DOL_DOCUMENT_ROOT.'/core/tpl/massactions_pre.tpl.php';
 
 if ($search_all) {
@@ -525,9 +529,6 @@ if ($search_all) {
 }
 
 $moreforfilter = '';
-/*$moreforfilter.='<div class="divsearchfield">';
-$moreforfilter.= $langs->trans('MyFilter') . ': <input type="text" name="search_myfield" value="'.dol_escape_htmltag($search_myfield).'">';
-$moreforfilter.= '</div>';*/
 
 $parameters = array();
 $reshook = $hookmanager->executeHooks('printFieldPreListTitle', $parameters, $object); // Note that $action and $object may have been modified by hook
@@ -548,7 +549,7 @@ $selectedfields = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfi
 $selectedfields .= (count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
 
 print '<div class="div-table-responsive">'; // You can use div-table-responsive-no-min if you dont need reserved height for your table
-print '<table class="tagtable nobottomiftotal liste'.($moreforfilter ? " listwithfilterbefore" : "").'">'."\n";
+print '<table class="liste tagtable nobottomiftotal '.($moreforfilter ? " listwithfilterbefore" : "").'">'."\n";
 
 
 // Fields title search
@@ -578,32 +579,14 @@ foreach ($object->fields as $key => $val) {
 		print '<td class="liste_titre'.($cssforfield ? ' '.$cssforfield : '').'">';
 		if (!empty($val['arrayofkeyval']) && is_array($val['arrayofkeyval'])) {
 			print $form->selectarray('search_'.$key, $val['arrayofkeyval'], (isset($search[$key]) ? $search[$key] : ''), $val['notnull'], 0, 0, '', 1, 0, 0, '', 'maxwidth100', 1);
+
 		} elseif ((strpos($val['type'], 'integer:') === 0) || (strpos($val['type'], 'sellist:') === 0)) {
 
-			$agsess = new Agsession($db);
-			$agsess->fetch($id);
-			$agsess->fetch_session_per_trainee($id);
-
-			if ($key == 'fk_trainee') {
-
-				$sql2 = " SELECT  s.rowid as id, s.nom as nom, s.prenom as prenom";
-				$sql2 .= " FROM " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s ";
-				$sql2 .= " LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
-				$sql2 .= " WHERE ss.fk_session_agefodd =" . (int)$id;
-
-				$resql2 = $db->query($sql2);
-				$arrStagiaires = [];
-
-				if ($resql2) {
-					while ($obj = $db->fetch_object($resql2)) {
-						$arrStagiaires[$obj->id] = $obj->nom . ' ' . $obj->prenom;
-					}
-					//var_dump($arrStagiaires);
+			if ($key == 'fk_session'){
+				if (!empty($formation)){
+					print $object->showInputField($val, $key, (isset($search[$key]) ? $search[$key] : ''), '', '', 'search_', $cssforfield.' maxwidth250', 1);
 				}
-
-				$form = new Form($db);
-				print $form->selectarray('search_fk_trainee', $arrStagiaires,'fk_trainee',1);
-			}else {
+			}else{
 				print $object->showInputField($val, $key, (isset($search[$key]) ? $search[$key] : ''), '', '', 'search_', $cssforfield.' maxwidth250', 1);
 			}
 
@@ -779,7 +762,12 @@ while ($i < $imaxinloop) {
 					if ($res){
 						print $agf->getNomUrl(1,"",0,'ref');
 					}
-				}else {
+				}else if ($key == 'ref') {
+					if ($formation){
+						$addValue = "&formation=".$formation;
+					}
+					print $object->getNomUrl(1,"",1,"",-1, (empty($session)) ? $object->fk_session : $session, $formation);
+				}else{
 					print $object->showOutputField($val, $key, $object->$key, '');
 				}
 				print '</td>';

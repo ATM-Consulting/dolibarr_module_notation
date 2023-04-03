@@ -81,11 +81,14 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
 dol_include_once('/notation/class/notationnote.class.php');
 dol_include_once('/notation/lib/notation_notationnote.lib.php');
 
+dol_include_once('/agefodd/lib/agefodd.lib.php');
+dol_include_once('/agefodd/class/agsession.class.php');
+
 // Load translation files required by the page
 $langs->loadLangs(array("notation@notation", "other"));
 
 // Get parameters
-$id = GETPOST('id', 'int');
+$id =  GETPOST('id', 'int');
 $ref = GETPOST('ref', 'alpha');
 $lineid   = GETPOST('lineid', 'int');
 
@@ -96,6 +99,13 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : str
 $backtopage = GETPOST('backtopage', 'alpha');
 $backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');
 $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
+$session =  GETPOST('session', 'int');
+$fk_session =  GETPOST('fk_session', 'int');
+$formation =  GETPOST('formation', 'int');
+$note = GETPOST('note','int');
+$fk_trainee = GETPOST('fk_trainee', 'int');
+$status=GETPOST('status','int');
+
 
 // Initialize technical objects
 $object = new NotationNote($db);
@@ -126,7 +136,7 @@ include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be includ
 
 // There is several ways to check permission.
 // Set $enablepermissioncheck to 1 to enable a minimum low level of checks
-$enablepermissioncheck = 0;
+$enablepermissioncheck = 1;
 if ($enablepermissioncheck) {
 	$permissiontoread = $user->rights->notation->notationnote->read;
 	$permissiontoadd = $user->rights->notation->notationnote->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
@@ -143,11 +153,6 @@ if ($enablepermissioncheck) {
 
 $upload_dir = $conf->notation->multidir_output[isset($object->entity) ? $object->entity : 1].'/notationnote';
 
-// Security check (enable the most restrictive one)
-//if ($user->socid > 0) accessforbidden();
-//if ($user->socid > 0) $socid = $user->socid;
-//$isdraft = (isset($object->status) && ($object->status == $object::STATUS_DRAFT) ? 1 : 0);
-//restrictedArea($user, $object->element, $object->id, $object->table_element, '', 'fk_soc', 'rowid', $isdraft);
 if (empty($conf->notation->enabled)) accessforbidden();
 if (!$permissiontoread) accessforbidden();
 
@@ -164,8 +169,8 @@ if ($reshook < 0) {
 
 if (empty($reshook)) {
 	$error = 0;
-
-	$backurlforlist = dol_buildpath('/notation/notationnote_list.php', 1);
+	$addLink = (!empty($formation)) ?  "&formation=" . $formation : "";
+	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
 
 	if (empty($backtopage) || ($cancel && empty($id))) {
 		if (empty($backtopage) || ($cancel && strpos($backtopage, '__ID__'))) {
@@ -177,8 +182,26 @@ if (empty($reshook)) {
 		}
 	}
 
-	$triggermodname = 'NOTATION_NOTATIONNOTE_MODIFY'; // Name of trigger action code to execute when we modify record
+	// Error handler
+	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
 
+		$error=0;
+
+		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
+			setEventMessages($langs->trans('ErrorType', $langs->transnoentitiesnoconv($object->fields['note']['label'])), null, 'errors');
+			$error++;
+		}
+
+	}
+
+
+	$triggermodname = 'NOTATION_NOTATIONNOTE_MODIFY'; // Name of trigger action code to execute when we modify record
+	$addLink = (!empty($formation)) ?  "&formation=" . $formation : "";
+
+	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
+
+	$backtopageforcancel = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
+	$backtopage = "";
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
 
@@ -193,6 +216,8 @@ if (empty($reshook)) {
 
 	// Action to build doc
 	include DOL_DOCUMENT_ROOT.'/core/actions_builddoc.inc.php';
+
+
 
 	if ($action == 'set_thirdparty' && $permissiontoadd) {
 		$object->setValueFrom('fk_soc', GETPOST('fk_soc', 'int'), '', '', 'date', '', $user, $triggermodname);
@@ -225,21 +250,11 @@ $title = $langs->trans("NotationNote");
 $help_url = '';
 llxHeader('', $title, $help_url);
 
-// Example : Adding jquery code
-// print '<script type="text/javascript">
-// jQuery(document).ready(function() {
-// 	function init_myfunc()
-// 	{
-// 		jQuery("#myid").removeAttr(\'disabled\');
-// 		jQuery("#myid").attr(\'disabled\',\'disabled\');
-// 	}
-// 	init_myfunc();
-// 	jQuery("#mybutton").click(function() {
-// 		init_myfunc();
-// 	});
-// });
-// </script>';
-
+if (!empty($formation)){
+	$addparams = "&formation=".$formation;
+}else{
+	$addparams = "&session=".$session;
+}
 
 // Part to create
 if ($action == 'create') {
@@ -248,11 +263,32 @@ if ($action == 'create') {
 		exit;
 	}
 
-	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("NotationNote")), '', 'object_'.$object->picto);
+	$langs->load('notation@notation');
+	$agf = new Agsession($db);
+	$res = $agf->fetch($session);
+	$agf->fetch_societe_per_session($session);
 
-	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+	$ref = $agf->getNomUrl(1,"",0,'ref');
+
+
+// Display consult
+	$head = session_prepare_head($agf);
+
+	dol_fiche_head($head, 'notation', $langs->trans('AgfSessionDetail'), -1, 'generic');
+
+	dol_agefodd_banner_tab($agf, 'id');
+	print '<hr>';
+
+
+
+	print load_fiche_titre($langs->trans("NewObject", $langs->transnoentitiesnoconv("notation")), '', 'object_'.$object->picto);
+
+	print '<form method="POST" action="'.$_SERVER["PHP_SELF"] . '">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="add">';
+	print '<input type="hidden" name="session" value="' . $session . '">';
+	print '<input type="hidden" name="fk_session" value="' . $fk_session . '">';
+
 	if ($backtopage) {
 		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
 	}
@@ -286,11 +322,16 @@ if ($action == 'create') {
 
 // Part to edit record
 if (($id || $ref) && $action == 'edit') {
+
 	print load_fiche_titre($langs->trans("NotationNote"), '', 'object_'.$object->picto);
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 	print '<input type="hidden" name="token" value="'.newToken().'">';
 	print '<input type="hidden" name="action" value="update">';
+	print '<input type="hidden" name="session" value="'.$session.'">';
+	print '<input type="hidden" name="fk_session" value="'.$fk_session.'">';
+	print '<input type="hidden" name="formation" value="'.$formation.'">';
+	print '<input type="hidden" name="fk_trainee" value="'.$object->fk_trainee.'">';
 	print '<input type="hidden" name="id" value="'.$object->id.'">';
 	if ($backtopage) {
 		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
@@ -298,6 +339,8 @@ if (($id || $ref) && $action == 'edit') {
 	if ($backtopageforcancel) {
 		print '<input type="hidden" name="backtopageforcancel" value="'.$backtopageforcancel.'">';
 	}
+		if ($session) $backtopageforcancel.='&session='.$session;
+		if ($formation) $backtopageforcancel.='&formation='.$formation;
 
 	print dol_get_fiche_head();
 
@@ -322,18 +365,20 @@ if (($id || $ref) && $action == 'edit') {
 if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'create'))) {
 	$res = $object->fetch_optionals();
 
-	$head = notationnotePrepareHead($object);
-	print dol_get_fiche_head($head, 'card', $langs->trans("NotationNote"), -1, $object->picto);
+	$head = notationnotePrepareHead($object, $session, $formation);
+	print dol_get_fiche_head($head, 'card', $langs->trans("notation"), 0, $object->picto);
 
 	$formconfirm = '';
 
 	// Confirmation to delete
 	if ($action == 'delete') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id, $langs->trans('DeleteNotationNote'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
+		//@todo backtolist ? avec fk_session
+
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id . $addparams, $langs->trans('DeleteNotationNote'), $langs->trans('ConfirmDeleteObject'), 'confirm_delete', '', 0, 1);
 	}
 	// Confirmation to delete line
 	if ($action == 'deleteline') {
-		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteline', '', 0, 1);
+		$formconfirm = $form->formconfirm($_SERVER["PHP_SELF"].'?id='.$object->id.'&lineid='.$lineid."&session=".$session, $langs->trans('DeleteLine'), $langs->trans('ConfirmDeleteLine'), 'confirm_deleteline', '', 0, 1);
 	}
 
 	// Clone confirmation
@@ -383,47 +428,25 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// Object card
 	// ------------------------------------------------------------
-	$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?restore_lastsearch_values=1'.(!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	if ($formation){
+		$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?formation='.$formation .  (!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	}else{
+		$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?restore_lastsearch_values=1'. '&session='. $session . (!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	}
 
 	$morehtmlref = '<div class="refidno">';
-	/*
-	 // Ref customer
-	 $morehtmlref.=$form->editfieldkey("RefCustomer", 'ref_client', $object->ref_client, $object, 0, 'string', '', 0, 1);
-	 $morehtmlref.=$form->editfieldval("RefCustomer", 'ref_client', $object->ref_client, $object, 0, 'string', '', null, null, '', 1);
-	 // Thirdparty
-	 $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . (is_object($object->thirdparty) ? $object->thirdparty->getNomUrl(1) : '');
-	 // Project
-	 if (! empty($conf->project->enabled)) {
-	 $langs->load("projects");
-	 $morehtmlref .= '<br>'.$langs->trans('Project') . ' ';
-	 if ($permissiontoadd) {
-	 //if ($action != 'classify') $morehtmlref.='<a class="editfielda" href="' . $_SERVER['PHP_SELF'] . '?action=classify&token='.newToken().'&id=' . $object->id . '">' . img_edit($langs->transnoentitiesnoconv('SetProject')) . '</a> ';
-	 $morehtmlref .= ' : ';
-	 if ($action == 'classify') {
-	 //$morehtmlref .= $form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'projectid', 0, 0, 1, 1);
-	 $morehtmlref .= '<form method="post" action="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'">';
-	 $morehtmlref .= '<input type="hidden" name="action" value="classin">';
-	 $morehtmlref .= '<input type="hidden" name="token" value="'.newToken().'">';
-	 $morehtmlref .= $formproject->select_projects($object->socid, $object->fk_project, 'projectid', $maxlength, 0, 1, 0, 1, 0, 0, '', 1);
-	 $morehtmlref .= '<input type="submit" class="button valignmiddle" value="'.$langs->trans("Modify").'">';
-	 $morehtmlref .= '</form>';
-	 } else {
-	 $morehtmlref.=$form->form_project($_SERVER['PHP_SELF'] . '?id=' . $object->id, $object->socid, $object->fk_project, 'none', 0, 0, 0, 1);
-	 }
-	 } else {
-	 if (! empty($object->fk_project)) {
-	 $proj = new Project($db);
-	 $proj->fetch($object->fk_project);
-	 $morehtmlref .= ': '.$proj->getNomUrl();
-	 } else {
-	 $morehtmlref .= '';
-	 }
-	 }
-	 }*/
+
 	$morehtmlref .= '</div>';
 
+	$addparams = "";
+	if (!empty($formation)){
+		$addparams = "&formation=".$formation;
+	}else{
+		$addparams = "&session=".$session;
+	}
 
-	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+
+	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref, $addparams);
 
 
 	print '<div class="fichecenter">';
@@ -431,10 +454,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	print '<div class="underbanner clearboth"></div>';
 	print '<table class="border centpercent tableforfield">'."\n";
 
-	// Common attributes
-	//$keyforbreak='fieldkeytoswitchonsecondcolumn';	// We change column just before this field
-	//unset($object->fields['fk_project']);				// Hide field already shown in banner
-	//unset($object->fields['fk_soc']);					// Hide field already shown in banner
+
 	include DOL_DOCUMENT_ROOT.'/core/tpl/commonfields_view.tpl.php';
 
 	// Other attributes. Fields from hook formObjectOptions and Extrafields.
@@ -513,7 +533,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		if (empty($reshook)) {
 			// Send
 			if (empty($user->socid)) {
-				print dolGetButtonAction($langs->trans('SendMail'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=presend&mode=init&token='.newToken().'#formmailbeforetitle');
+				//print dolGetButtonAction($langs->trans('SendMail'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=presend&mode=init&token='.newToken().'#formmailbeforetitle');
 			}
 
 			// Back to draft
@@ -521,40 +541,16 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 				print dolGetButtonAction($langs->trans('SetToDraft'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=confirm_setdraft&confirm=yes&token='.newToken(), '', $permissiontoadd);
 			}
 
-			print dolGetButtonAction($langs->trans('Modify'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit&token='.newToken(), '', $permissiontoadd);
-
-			// Validate
-			if ($object->status == $object::STATUS_DRAFT) {
-				if (empty($object->table_element_line) || (is_array($object->lines) && count($object->lines) > 0)) {
-					print dolGetButtonAction($langs->trans('Validate'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=confirm_validate&confirm=yes&token='.newToken(), '', $permissiontoadd);
-				} else {
-					$langs->load("errors");
-					print dolGetButtonAction($langs->trans("ErrorAddAtLeastOneLineFirst"), $langs->trans("Validate"), 'default', '#', '', 0);
-				}
+			$addParams = "";
+			if (!empty($formation)){
+				$addParams = "&formation=".$formation;
+			}else {
+				$addParams = "&session=".$session;
 			}
-
-			// Clone
-			print dolGetButtonAction($langs->trans('ToClone'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.(!empty($object->socid)?'&socid='.$object->socid:'').'&action=clone&token='.newToken(), '', $permissiontoadd);
-
-			/*
-			if ($permissiontoadd) {
-				if ($object->status == $object::STATUS_ENABLED) {
-					print dolGetButtonAction($langs->trans('Disable'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=disable&token='.newToken(), '', $permissiontoadd);
-				} else {
-					print dolGetButtonAction($langs->trans('Enable'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=enable&token='.newToken(), '', $permissiontoadd);
-				}
-			}
-			if ($permissiontoadd) {
-				if ($object->status == $object::STATUS_VALIDATED) {
-					print dolGetButtonAction($langs->trans('Cancel'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=close&token='.newToken(), '', $permissiontoadd);
-				} else {
-					print dolGetButtonAction($langs->trans('Re-Open'), '', 'default', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=reopen&token='.newToken(), '', $permissiontoadd);
-				}
-			}
-			*/
+			print dolGetButtonAction($langs->trans('Modify'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id."&fk_session=". $session . $addParams . '&action=edit&token='.newToken(), '', $permissiontoadd);
 
 			// Delete (need delete permission, or if draft, just need create/modify permission)
-			print dolGetButtonAction($langs->trans('Delete'), '', 'delete', $_SERVER['PHP_SELF'].'?id='.$object->id.'&action=delete&token='.newToken(), '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
+			print dolGetButtonAction($langs->trans('Delete'), '', 'delete',  $_SERVER['PHP_SELF'].'?id='.$object->id. $addParams . '&action=delete&token='.newToken(), '', $permissiontodelete || ($object->status == $object::STATUS_DRAFT && $permissiontoadd));
 		}
 		print '</div>'."\n";
 	}
@@ -596,7 +592,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 		// List of actions on element
 		include_once DOL_DOCUMENT_ROOT.'/core/class/html.formactions.class.php';
 		$formactions = new FormActions($db);
-		$somethingshown = $formactions->showactions($object, $object->element.'@'.$object->module, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlcenter);
+		//$somethingshown = $formactions->showactions($object, $object->element.'@'.$object->module, (is_object($object->thirdparty) ? $object->thirdparty->id : 0), 1, '', $MAXEVENT, '', $morehtmlcenter);
 
 		print '</div></div>';
 	}
