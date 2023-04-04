@@ -548,6 +548,11 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			}else {
 				$addParams = "&session=".$session;
 			}
+
+			if (!empty($object->fk_trainee)) {
+				$addParams .= "&fk_trainee=".$object->fk_trainee;
+			}
+
 			print dolGetButtonAction($langs->trans('Modify'), '', 'default', $_SERVER["PHP_SELF"].'?id='.$object->id."&fk_session=". $session . $addParams . '&action=edit&token='.newToken(), '', $permissiontoadd);
 
 			// Delete (need delete permission, or if draft, just need create/modify permission)
