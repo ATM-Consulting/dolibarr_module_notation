@@ -1710,7 +1710,7 @@ class NotationNote extends CommonObject
 					}
 
 				}
-				$filter = GETPOST('search_fk_trainee');
+				$filter = GETPOSTISSET('fk_trainee') ? GETPOST('fk_trainee','int') : (GETPOSTISSET('search_fk_trainee') ?   GETPOST('search_fk_trainee', 'int') : "");
 				if (GETPOST('button_removefilter_x', 'alpha') || GETPOST('button_removefilter.x', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
 					$filter = "";
 				}

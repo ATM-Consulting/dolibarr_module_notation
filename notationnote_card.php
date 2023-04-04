@@ -288,6 +288,7 @@ if ($action == 'create') {
 	print '<input type="hidden" name="action" value="add">';
 	print '<input type="hidden" name="session" value="' . $session . '">';
 	print '<input type="hidden" name="fk_session" value="' . $fk_session . '">';
+	print '<input type="hidden" name="fk_trainee" value="' . $fk_trainee . '">';
 
 	if ($backtopage) {
 		print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
