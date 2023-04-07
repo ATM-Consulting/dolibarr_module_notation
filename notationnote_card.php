@@ -185,6 +185,8 @@ if (empty($reshook)) {
 	// Error handler
 	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
 
+
+		if (empty($object->ref) && $action == "add") $object->ref = $object->getNextNumRef();
 		$error=0;
 
 		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
@@ -201,7 +203,7 @@ if (empty($reshook)) {
 	$backurlforlist = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
 
 	$backtopageforcancel = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
-	$backtopage = "";
+	$backtopage = dol_buildpath('/notation/notationnote_list.php?session='.$session . $addLink, 1);
 	// Actions cancel, add, update, update_extras, confirm_validate, confirm_delete, confirm_deleteline, confirm_clone, confirm_close, confirm_setdraft, confirm_reopen
 	include DOL_DOCUMENT_ROOT.'/core/actions_addupdatedelete.inc.php';
 
