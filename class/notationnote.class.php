@@ -508,6 +508,8 @@ class NotationNote extends CommonObject
 	 */
 	public function update(User $user, $notrigger = false)
 	{
+		// le champs tms ne se mets pas à jour
+		$this->tms = time();
 		return $this->updateCommon($user, $notrigger);
 	}
 
