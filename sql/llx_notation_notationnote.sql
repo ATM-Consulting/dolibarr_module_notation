@@ -20,5 +20,8 @@ CREATE TABLE llx_notation_notationnote(
     note float default 0,
 	fk_session integer,
 	fk_trainee integer,
+    date_creation datetime NOT NULL,
+    tms timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    fk_user_creat integer NOT NULL,
     entity integer NOT NULL DEFAULT 1
 ) ENGINE=innodb;

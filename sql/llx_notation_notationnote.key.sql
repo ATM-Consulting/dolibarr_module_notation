@@ -19,6 +19,7 @@ ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_rowid 
 ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_ref (ref);
 ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_fk_session (fk_session);
 ALTER TABLE llx_notation_notationnote ADD INDEX idx_notation_notationnote_fk_trainee (fk_trainee);
+ALTER TABLE llx_notation_notationnote ADD CONSTRAINT llx_notation_notationnote_fk_user_creat FOREIGN KEY (fk_user_creat) REFERENCES llx_user(rowid);
 
 -- END MODULEBUILDER INDEXES
 
