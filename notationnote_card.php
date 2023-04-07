@@ -186,11 +186,7 @@ if (empty($reshook)) {
 	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
 
 
-		if (empty($object->ref) && $action == "add"){
-			$newref = $object->getNextNumRef();
-			$object->ref = $newref;
-		}
-
+		if (empty($object->ref) && $action == "add") $object->ref = $object->getNextNumRef();
 		$error=0;
 
 		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
