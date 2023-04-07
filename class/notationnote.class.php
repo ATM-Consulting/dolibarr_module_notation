@@ -117,6 +117,9 @@ class NotationNote extends CommonObject
 		'note' => array('type'=>'real', 'label'=>'note', 'enabled'=>'1', 'position'=>5, 'notnull'=>0, 'visible'=>1, 'default'=>'0', 'isameasure'=>'1', 'css'=>'maxwidth75imp', 'help'=>"", 'validate'=>'1',),
 		'fk_session' => array('type'=>'integer:Agsession:agefodd/class/agsession.class.php', 'label'=>'Session', 'picto'=>'Session', 'enabled'=>'1', 'position'=>3, 'notnull'=>1, 'noteditable'=>1, 'visible'=>1, 'index'=>1, 'css'=>'maxwidth500 widthcentpercentminusxx', 'help'=>"", 'validate'=>'1',),
 		'fk_trainee' => array('type'=>'integer:Agefodd_Stagiaire:agefodd/class/agefodd_stagiaire.class.php:name::card', 'label'=>'AgfFichePresByTraineeTraineeTitleM', 'enabled'=>1, 'position'=>4, 'notnull'=>1, 'visible'=>1),
+		'tms' => array('type'=>'timestamp', 'label'=>'DateModification', 'enabled'=>'1', 'position'=>501, 'notnull'=>0, 'visible'=>-2,),
+		'date_creation' => array('type'=>'datetime', 'label'=>'DateCreation', 'enabled'=>'1', 'position'=>500, 'notnull'=>1, 'visible'=>-2,),
+		'fk_user_creat' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'UserAuthor', 'picto'=>'user', 'enabled'=>'1', 'position'=>510, 'notnull'=>1, 'visible'=>-2, 'foreignkey'=>'user.rowid',),
 		'entity' => array('type'=>'integer', 'label'=>'Entity', 'enabled'=>'1', 'position'=>20, 'notnull'=>1, 'visible'=>0, 'default'=>'1', 'index'=>1,),
 		//'status' => array('type'=>'integer', 'label'=>'Status', 'enabled'=>'1', 'position'=>2000, 'notnull'=>1, 'visible'=>2, 'index'=>1, 'arrayofkeyval'=>array('0'=>'Brouillon', '1'=>'Valid&eacute;', '9'=>'Annul&eacute;'), 'validate'=>'1',),
 	);
@@ -128,6 +131,9 @@ class NotationNote extends CommonObject
 	public $fk_trainee;
 	public $status;
 	public $entity;
+	public $tms;
+	public $fk_user_create;
+	public $date_creation;
 
 	public $nbLines;
 	public $sumNotation;
@@ -351,7 +357,7 @@ class NotationNote extends CommonObject
 	 */
 	public function fetchAllByTraining($idTraining){
 
-		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ag.ref as ref_session,";
+		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ag.ref as ref_session, n.date_creation, n.fk_user_creat,";
 		$sql  .=" n.fk_trainee as id_trainee, s.nom as nom, s.prenom as prenom, afc.rowid as id_training, afc.ref as ref_training, n.entity ";
  		$sql .=" FROM " . MAIN_DB_PREFIX.$this->table_element ." as n ";
 		$sql .= " INNER JOIN  " . MAIN_DB_PREFIX . "agefodd_session as ag ON ag.rowid = n.fk_session ";
@@ -380,7 +386,7 @@ class NotationNote extends CommonObject
 	 */
 	public function fetchAllBySession($idSession){
 
-		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ass.ref as ref_session,   n.fk_trainee as id_trainee, s.nom as nom, s.prenom as prenom,  n.entity";
+		$sql   =" SELECT DISTINCT n.rowid as  id_note, n.note as notation, n.fk_session as id_session, ass.ref as ref_session,   n.fk_trainee as id_trainee, s.nom as nom, s.prenom as prenom, n.date_creation, n.fk_user_creat,  n.entity";
 		$sql  .=" FROM ".MAIN_DB_PREFIX .$this->table_element ." as n" ;
 		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_stagiaire AS s on s.rowid = n.fk_trainee ";
 		$sql .=" LEFT JOIN " . MAIN_DB_PREFIX . "agefodd_session_stagiaire as ss ON ss.fk_stagiaire = s.rowid ";
