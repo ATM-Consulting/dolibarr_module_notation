@@ -334,7 +334,7 @@ class Notation extends DolibarrApi
 		}
 
 		foreach ($request_data as $field => $value) {
-			if ($field == 'id') {
+			if ($field == 'id' || $field == 'ref' ) {
 				continue;
 			}
 			$this->notationnote->$field = $this->_checkValForAPI($field, $value, $this->notationnote);
