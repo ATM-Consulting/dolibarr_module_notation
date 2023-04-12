@@ -334,7 +334,7 @@ class Notation extends DolibarrApi
 		}
 
 		foreach ($request_data as $field => $value) {
-			if ($field == 'id') {
+			if ($field == 'id' || $field == 'ref' ) {
 				continue;
 			}
 			$this->notationnote->$field = $this->_checkValForAPI($field, $value, $this->notationnote);
@@ -462,7 +462,7 @@ class Notation extends DolibarrApi
 	{
 		$notationnote = array();
 		foreach ($this->notationnote->fields as $field => $propfield) {
-			if (in_array($field, array('rowid', 'entity', 'date_creation', 'tms', 'fk_user_creat')) || $propfield['notnull'] != 1) {
+			if (in_array($field, array('rowid', 'entity', 'date_creation', 'tms', 'fk_user_creat', 'ref')) || $propfield['notnull'] != 1) {
 				continue; // Not a mandatory field
 			}
 			if (!isset($data[$field])) {
