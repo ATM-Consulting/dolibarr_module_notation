@@ -189,7 +189,7 @@ if (empty($reshook)) {
 		if (empty($object->ref) && $action == "add") $object->ref = $object->getNextNumRef();
 		$error=0;
 
-		if (empty(GETPOST('note')) || GETPOST('note') < $conf->global->MIN_NOTATION  || GETPOST('note') > $conf->global->MAX_NOTATION ){
+		if (empty(GETPOST('note')) || GETPOST('note') < floatval(getDolGlobalString('MIN_NOTATION', '0'))  || GETPOST('note') >  floatval(getDolGlobalString('MAX_NOTATION', '0')) ){
 			setEventMessages($langs->trans('ErrorType', $langs->transnoentitiesnoconv($object->fields['note']['label'])), null, 'errors');
 			$error++;
 		}
