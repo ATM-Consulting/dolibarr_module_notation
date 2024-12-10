@@ -90,7 +90,7 @@ class InterfaceNotationTriggers extends DolibarrTriggers
 	 */
 	public function runTrigger($action, $object, User $user, Translate $langs, Conf $conf)
 	{
-		if (empty($conf->notation) || empty($conf->notation->enabled)) {
+		if (empty($conf->notation) || !isModEnabled("notation")) {
 			return 0; // If module is not enabled, we do nothing
 		}
 

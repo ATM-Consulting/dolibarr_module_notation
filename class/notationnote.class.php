@@ -84,7 +84,7 @@ class NotationNote extends CommonObject
 	 *		Note: Filter can be a string like "(t.ref:like:'SO-%') or (t.date_creation:<:'20160101') or (t.nature:is:NULL)"
 	 *  'label' the translation key.
 	 *  'picto' is code of a picto to show before value in forms
-	 *  'enabled' is a condition when the field must be managed (Example: 1 or '$conf->global->MY_SETUP_PARAM' or '!empty($conf->multicurrency->enabled)' ...)
+	 *  'enabled' is a condition when the field must be managed (Example: 1 or '$conf->global->MY_SETUP_PARAM' or 'isModEnabled("multicurrency")' ...)
 	 *  'position' is the sort order of field.
 	 *  'notnull' is set to 1 if not null in database. Set to -1 if we must set data to null if empty ('' or 0).
 	 *  'visible' says if field is visible in list (Examples: 0=Not visible, 1=Visible on list and create/update/view forms, 2=Visible on list only, 3=Visible on create/update/view form only (not list), 4=Visible on list and update/view form only (not create). 5=Visible on list and view only (not create/not update). Using a negative value means field is not shown by default on list but can be selected for viewing)
@@ -187,15 +187,15 @@ class NotationNote extends CommonObject
 
 		$this->db = $db;
 
-		if (empty($conf->global->MAIN_SHOW_TECHNICAL_ID) && isset($this->fields['rowid']) && !empty($this->fields['ref'])) {
+		if (!getDolGlobalString('MAIN_SHOW_TECHNICAL_ID') && isset($this->fields['rowid']) && !empty($this->fields['ref'])) {
 			$this->fields['rowid']['visible'] = 0;
 		}
-		if (empty($conf->multicompany->enabled) && isset($this->fields['entity'])) {
+		if (!isModEnabled("multicompany") && isset($this->fields['entity'])) {
 			$this->fields['entity']['enabled'] = 0;
 		}
 
 		// Example to show how to set values of fields definition dynamically
-		/*if ($user->rights->notation->notationnote->read) {
+		/*if ($user->hasRight("notation", "notationnote", "read")) {
 			$this->fields['myfield']['visible'] = 1;
 			$this->fields['myfield']['noteditable'] = 0;
 		}*/
@@ -566,8 +566,8 @@ class NotationNote extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->notationnote->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->notationnote->notationnote_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "notationnote", "write"))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "notationnote", "notationnote_advance", "validate"))))
 		 {
 		 $this->error='NotEnoughPermissions';
 		 dol_syslog(get_class($this)."::valid ".$this->error, LOG_ERR);
@@ -684,8 +684,8 @@ class NotationNote extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->notation_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "write"))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "notation_advance", "validate"))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -708,8 +708,8 @@ class NotationNote extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->notation_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "write"))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "notation_advance", "validate"))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -732,8 +732,8 @@ class NotationNote extends CommonObject
 			return 0;
 		}
 
-		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->write))
-		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && ! empty($user->rights->notation->notation_advance->validate))))
+		/*if (! ((empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "write"))
+		 || (! empty($conf->global->MAIN_USE_ADVANCED_PERMS) && $user->hasRight("notation", "notation_advance", "validate"))))
 		 {
 		 $this->error='Permission denied';
 		 return -1;
@@ -787,7 +787,7 @@ class NotationNote extends CommonObject
 
 		$linkclose = '';
 		if (empty($notooltip)) {
-			if (!empty($conf->global->MAIN_OPTIMIZEFORTEXTBROWSER)) {
+			if (getDolGlobalString('MAIN_OPTIMIZEFORTEXTBROWSER')) {
 				$label = $langs->trans("ShowNotationNote");
 				$linkclose .= ' alt="'.dol_escape_htmltag($label, 1).'"';
 			}
@@ -999,15 +999,15 @@ class NotationNote extends CommonObject
 		global $langs, $conf;
 		$langs->load("notation@notation");
 
-		if (empty($conf->global->NOTATION_NOTATIONNOTE_ADDON)) {
+		if (!getDolGlobalString('NOTATION_NOTATIONNOTE_ADDON')) {
 			$conf->global->NOTATION_NOTATIONNOTE_ADDON = 'mod_notationnote_standard';
 		}
 
-		if (!empty($conf->global->NOTATION_NOTATIONNOTE_ADDON)) {
+		if (getDolGlobalString('NOTATION_NOTATIONNOTE_ADDON')) {
 			$mybool = false;
 
-			$file = $conf->global->NOTATION_NOTATIONNOTE_ADDON.".php";
-			$classname = $conf->global->NOTATION_NOTATIONNOTE_ADDON;
+			$file = getDolGlobalString('NOTATION_NOTATIONNOTE_ADDON').".php";
+			$classname = getDolGlobalString('NOTATION_NOTATIONNOTE_ADDON');
 
 			// Include file with class
 			$dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
@@ -1069,8 +1069,8 @@ class NotationNote extends CommonObject
 
 			if (!empty($this->model_pdf)) {
 				$modele = $this->model_pdf;
-			} elseif (!empty($conf->global->NOTATIONNOTE_ADDON_PDF)) {
-				$modele = $conf->global->NOTATIONNOTE_ADDON_PDF;
+			} elseif (getDolGlobalString('NOTATIONNOTE_ADDON_PDF')) {
+				$modele = getDolGlobalString('NOTATIONNOTE_ADDON_PDF');
 			}
 		}
 
@@ -1290,7 +1290,7 @@ class NotationNote extends CommonObject
 		} elseif (preg_match('/^html/', $type)) {
 			if (!preg_match('/search_/', $keyprefix)) {		// If keyprefix is search_ or search_options_, we must just use a simple text field
 				require_once DOL_DOCUMENT_ROOT.'/core/class/doleditor.class.php';
-				$doleditor = new DolEditor($keyprefix.$key.$keysuffix, $value, '', 200, 'dolibarr_notes', 'In', false, false, !empty($conf->fckeditor->enabled) && $conf->global->FCKEDITOR_ENABLE_SOCIETE, ROWS_5, '90%');
+				$doleditor = new DolEditor($keyprefix.$key.$keysuffix, $value, '', 200, 'dolibarr_notes', 'In', false, false, isModEnabled("fckeditor") && getDolGlobalString('FCKEDITOR_ENABLE_SOCIETE'), ROWS_5, '90%');
 				$out = $doleditor->Create(1, '', true, '', '', $moreparam, $morecss);
 			} else {
 				$out = '<input type="text" class="flat '.$morecss.' maxwidthonsmartphone" name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.dol_escape_htmltag($value).'" '.($moreparam ? $moreparam : '').'>';
@@ -1316,7 +1316,7 @@ class NotationNote extends CommonObject
 			$out = '<input type="text" class="flat '.$morecss.' maxwidthonsmartphone" name="'.$keyprefix.$key.$keysuffix.'" id="'.$keyprefix.$key.$keysuffix.'" value="'.$value.'" '.($moreparam ? $moreparam : '').'> ';
 		} elseif ($type == 'select') {
 			$out = '';
-			if (!empty($conf->use_javascript_ajax) && empty($conf->global->MAIN_EXTRAFIELDS_DISABLE_SELECT2)) {
+			if (!empty($conf->use_javascript_ajax) && !getDolGlobalString('MAIN_EXTRAFIELDS_DISABLE_SELECT2')) {
 				include_once DOL_DOCUMENT_ROOT.'/core/lib/ajax.lib.php';
 				$out .= ajax_combobox($keyprefix.$key.$keysuffix, array(), 0);
 			}
@@ -1340,7 +1340,7 @@ class NotationNote extends CommonObject
 			$out .= '</select>';
 		} elseif ($type == 'sellist') {
 			$out = '';
-			if (!empty($conf->use_javascript_ajax) && empty($conf->global->MAIN_EXTRAFIELDS_DISABLE_SELECT2)) {
+			if (!empty($conf->use_javascript_ajax) && !getDolGlobalString('MAIN_EXTRAFIELDS_DISABLE_SELECT2')) {
 				include_once DOL_DOCUMENT_ROOT.'/core/lib/ajax.lib.php';
 				$out .= ajax_combobox($keyprefix.$key.$keysuffix, array(), 0);
 			}
