@@ -138,11 +138,11 @@ include DOL_DOCUMENT_ROOT.'/core/actions_fetchobject.inc.php'; // Must be includ
 // Set $enablepermissioncheck to 1 to enable a minimum low level of checks
 $enablepermissioncheck = 1;
 if ($enablepermissioncheck) {
-	$permissiontoread = $user->rights->notation->notationnote->read;
-	$permissiontoadd = $user->rights->notation->notationnote->write; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
+	$permissiontoread = $user->hasRight("notation", "notationnote", "read");
+	$permissiontoadd = $user->hasRight("notation", "notationnote", "write"); // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
 	$permissiontodelete = $user->rights->notation->notationnote->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
-	$permissionnote = $user->rights->notation->notationnote->write; // Used by the include of actions_setnotes.inc.php
-	$permissiondellink = $user->rights->notation->notationnote->write; // Used by the include of actions_dellink.inc.php
+	$permissionnote = $user->hasRight("notation", "notationnote", "write"); // Used by the include of actions_setnotes.inc.php
+	$permissiondellink = $user->hasRight("notation", "notationnote", "write"); // Used by the include of actions_dellink.inc.php
 } else {
 	$permissiontoread = 1;
 	$permissiontoadd = 1; // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
@@ -153,7 +153,7 @@ if ($enablepermissioncheck) {
 
 $upload_dir = $conf->notation->multidir_output[isset($object->entity) ? $object->entity : 1].'/notationnote';
 
-if (empty($conf->notation->enabled)) accessforbidden();
+if (!isModEnabled("notation")) accessforbidden();
 if (!$permissiontoread) accessforbidden();
 
 
@@ -394,7 +394,7 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	// Confirmation of action xxxx (You can use it for xxx = 'close', xxx = 'reopen', ...)
 	if ($action == 'xxx') {
 		$text = $langs->trans('ConfirmActionNotationNote', $object->ref);
-		/*if (! empty($conf->notification->enabled))
+		/*if (isModEnabled("notification"))
 		{
 			require_once DOL_DOCUMENT_ROOT . '/core/class/notify.class.php';
 			$notify = new Notify($db);

@@ -72,7 +72,7 @@ class modNotation extends DolibarrModules
 		$this->editor_url = 'https://www.atm-consulting.fr';
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.0.4';
+		$this->version = '1.0.5';
 		// Url to the file with your last numberversion of this module
 		//$this->url_last_version = 'http://www.example.com/versionmodule.txt';
 
@@ -167,7 +167,7 @@ class modNotation extends DolibarrModules
 			'fr_FR:ParentCompany'=>'Maison mère ou revendeur'
 		)*/
 
-		if (!isset($conf->notation) || !isset($conf->notation->enabled)) {
+		if (!isset($conf->notation) || !isModEnabled("notation")) {
 			$conf->notation = new stdClass();
 			$conf->notation->enabled = 0;
 		}
@@ -227,7 +227,7 @@ class modNotation extends DolibarrModules
 			// Name of columns with primary key (try to always name it 'rowid')
 			'tabrowid'=>array("rowid", "rowid", "rowid"),
 			// Condition to show each dictionary
-			'tabcond'=>array($conf->notation->enabled, $conf->notation->enabled, $conf->notation->enabled),
+			'tabcond'=>array(isModEnabled("notation"), isModEnabled("notation"), isModEnabled("notation")),
 			// Tooltip for every fields of dictionaries: DO NOT PUT AN EMPTY ARRAY
 			'tabhelp'=>array(array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'), array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'), ...),
 		);
@@ -258,7 +258,7 @@ class modNotation extends DolibarrModules
 			//      'frequency' => 2,
 			//      'unitfrequency' => 3600,
 			//      'status' => 0,
-			//      'test' => '$conf->notation->enabled',
+			//      'test' => 'isModEnabled("notation")',
 			//      'priority' => 50,
 			//  ),
 		);
@@ -275,17 +275,17 @@ class modNotation extends DolibarrModules
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = $langs->trans('readObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
-		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->read)
+		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->hasRight("notation", "notationnote", "read"))
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = $langs->trans('CreateUpdateObj') ; // Permission label
 		$this->rights[$r][4] = 'notationnote';
-		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->write)
+		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->hasRight("notation", "notationnote", "write"))
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
 		$this->rights[$r][1] = $langs->trans('deleteObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
-		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->notation->notationnote->delete)
+		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->hasRight("notation", "notationnote", "delete"))
 		$r++;
 		/* END MODULEBUILDER PERMISSIONS */
 
@@ -304,8 +304,8 @@ class modNotation extends DolibarrModules
 			'url'=>'/notation/notationindex.php',
 			'langs'=>'notation@notation', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 			'position'=>1000 + $r,
-			'enabled'=>'$conf->notation->enabled', // Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled.
-			'perms'=>'1', // Use 'perms'=>'$user->rights->notation->notationnote->read' if you want your menu with a permission rules
+			'enabled'=>'isModEnabled("notation")', // Define condition to show or hide menu entry. Use 'isModEnabled("notation")' if entry must be visible if module is enabled.
+			'perms'=>'1', // Use 'perms'=>'$user->hasRight("notation", "notationnote", "read")' if you want your menu with a permission rules
 			'target'=>'',
 			'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
 		);*/
@@ -324,8 +324,8 @@ class modNotation extends DolibarrModules
             'langs'=>'notation@notation',
             'position'=>1100+$r,
             // Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-            'enabled'=>'$conf->notation->enabled',
-            // Use 'perms'=>'$user->rights->notation->level1->level2' if you want your menu with a permission rules
+            'enabled'=>'isModEnabled("notation")',
+            // Use 'perms'=>'$user->hasRight("notation", "level1", "level2")' if you want your menu with a permission rules
             'perms'=>'1',
             'target'=>'',
             // 0=Menu for internal users, 1=external users, 2=both
@@ -344,8 +344,8 @@ class modNotation extends DolibarrModules
             'langs'=>'notation@notation',
             'position'=>1100+$r,
             // Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-            'enabled'=>'$conf->notation->enabled',
-            // Use 'perms'=>'$user->rights->notation->level1->level2' if you want your menu with a permission rules
+            'enabled'=>'isModEnabled("notation")',
+            // Use 'perms'=>'$user->hasRight("notation", "level1", "level2")' if you want your menu with a permission rules
             'perms'=>'1',
             'target'=>'',
             // 0=Menu for internal users, 1=external users, 2=both
@@ -378,11 +378,11 @@ class modNotation extends DolibarrModules
 		$res1 = $extrafields->addExtraField('average_session_notation', 'Moyenne', 'float', 100, '', 'agefodd_session', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
 		$res2 = $extrafields->addExtraField('average_formation_notation', 'Moyenne', 'float', 100, '', 'agefodd_formation_catalogue', 0, 0, '0', array('options' => array('' => null)), -1, '', 1, 0, '', '', 'notation@notation');
 
-		//$result1=$extrafields->addExtraField('notation_myattr1', "New Attr 1 label", 'boolean', 1,  3, 'thirdparty',   0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
-		//$result2=$extrafields->addExtraField('notation_myattr2', "New Attr 2 label", 'varchar', 1, 10, 'project',      0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
-		//$result3=$extrafields->addExtraField('notation_myattr3', "New Attr 3 label", 'varchar', 1, 10, 'bank_account', 0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
-		//$result4=$extrafields->addExtraField('notation_myattr4', "New Attr 4 label", 'select',  1,  3, 'thirdparty',   0, 1, '', array('options'=>array('code1'=>'Val1','code2'=>'Val2','code3'=>'Val3')), 1,'', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
-		//$result5=$extrafields->addExtraField('notation_myattr5', "New Attr 5 label", 'text',    1, 10, 'user',         0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', '$conf->notation->enabled');
+		//$result1=$extrafields->addExtraField('notation_myattr1', "New Attr 1 label", 'boolean', 1,  3, 'thirdparty',   0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', 'isModEnabled("notation")');
+		//$result2=$extrafields->addExtraField('notation_myattr2', "New Attr 2 label", 'varchar', 1, 10, 'project',      0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', 'isModEnabled("notation")');
+		//$result3=$extrafields->addExtraField('notation_myattr3', "New Attr 3 label", 'varchar', 1, 10, 'bank_account', 0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', 'isModEnabled("notation")');
+		//$result4=$extrafields->addExtraField('notation_myattr4', "New Attr 4 label", 'select',  1,  3, 'thirdparty',   0, 1, '', array('options'=>array('code1'=>'Val1','code2'=>'Val2','code3'=>'Val3')), 1,'', 0, 0, '', '', 'notation@notation', 'isModEnabled("notation")');
+		//$result5=$extrafields->addExtraField('notation_myattr5', "New Attr 5 label", 'text',    1, 10, 'user',         0, 0, '', '', 1, '', 0, 0, '', '', 'notation@notation', 'isModEnabled("notation")');
 
 		// Permissions
 		$this->remove($options);

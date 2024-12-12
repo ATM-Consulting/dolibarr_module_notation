@@ -70,7 +70,7 @@ class Notation extends DolibarrApi
 	 */
 	public function get($id)
 	{
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->read) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "read")) {
 			throw new RestException(401);
 		}
 
@@ -102,7 +102,7 @@ class Notation extends DolibarrApi
 	 */
 	public function getAllFromSession($id)
 	{
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->read) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "read")) {
 			throw new RestException(401);
 		}
 
@@ -113,7 +113,7 @@ class Notation extends DolibarrApi
 		}
 
 		// on doit avoir les droits pour voir les notations
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->read) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "read")) {
 			throw new RestException(401);
 		}
 
@@ -141,7 +141,7 @@ class Notation extends DolibarrApi
 	 */
 	public function getAllFromTraining($id)
 	{
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->read) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "read")) {
 			throw new RestException(401);
 		}
 
@@ -151,7 +151,7 @@ class Notation extends DolibarrApi
 			throw new RestException(404, 'NotationNotes not found');
 		}
 		// on doit avoir les droits pour voir les notation
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->read) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "read")) {
 			throw new RestException(401);
 		}
 		// on doit avoir les droits en lecture pour les formations
@@ -188,7 +188,7 @@ class Notation extends DolibarrApi
 		$obj_ret = array();
 		$tmpobject = new NotationNote($this->db);
 
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->read) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "read")) {
 			throw new RestException(401);
 		}
 
@@ -198,17 +198,17 @@ class Notation extends DolibarrApi
 
 		// If the internal user must only see his customers, force searching by him
 		$search_sale = 0;
-		if ($restrictonsocid && !DolibarrApiAccess::$user->rights->societe->client->voir && !$socid) {
+		if ($restrictonsocid && !DolibarrApiAccess::$user->hasRight("societe", "client", "voir") && !$socid) {
 			$search_sale = DolibarrApiAccess::$user->id;
 		}
 
 		$sql = "SELECT t.rowid";
-		if ($restrictonsocid && (!DolibarrApiAccess::$user->rights->societe->client->voir && !$socid) || $search_sale > 0) {
+		if ($restrictonsocid && (!DolibarrApiAccess::$user->hasRight("societe", "client", "voir") && !$socid) || $search_sale > 0) {
 			$sql .= ", sc.fk_soc, sc.fk_user"; // We need these fields in order to filter by sale (including the case where the user can only see his prospects)
 		}
 		$sql .= " FROM ".MAIN_DB_PREFIX.$tmpobject->table_element." as t";
 
-		if ($restrictonsocid && (!DolibarrApiAccess::$user->rights->societe->client->voir && !$socid) || $search_sale > 0) {
+		if ($restrictonsocid && (!DolibarrApiAccess::$user->hasRight("societe", "client", "voir") && !$socid) || $search_sale > 0) {
 			$sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc"; // We need this table joined to the select in order to filter by sale
 		}
 		$sql .= " WHERE 1 = 1";
@@ -220,7 +220,7 @@ class Notation extends DolibarrApi
 		if ($tmpobject->ismultientitymanaged) {
 			$sql .= ' AND t.entity IN ('.getEntity($tmpobject->element).')';
 		}
-		if ($restrictonsocid && (!DolibarrApiAccess::$user->rights->societe->client->voir && !$socid) || $search_sale > 0) {
+		if ($restrictonsocid && (!DolibarrApiAccess::$user->hasRight("societe", "client", "voir") && !$socid) || $search_sale > 0) {
 			$sql .= " AND t.fk_soc = sc.fk_soc";
 		}
 		if ($restrictonsocid && $socid) {
@@ -285,7 +285,7 @@ class Notation extends DolibarrApi
 	 */
 	public function post($request_data = null)
 	{
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->write) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "write")) {
 			throw new RestException(401);
 		}
 
@@ -320,7 +320,7 @@ class Notation extends DolibarrApi
 	 */
 	public function put($id, $request_data = null)
 	{
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->write) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "write")) {
 			throw new RestException(401);
 		}
 
@@ -362,7 +362,7 @@ class Notation extends DolibarrApi
 	 */
 	public function delete($id)
 	{
-		if (!DolibarrApiAccess::$user->rights->notation->notationnote->delete) {
+		if (!DolibarrApiAccess::$user->hasRight("notation", "notationnote", "delete")) {
 			throw new RestException(401);
 		}
 		$result = $this->notationnote->fetch($id);
