@@ -1,5 +1,9 @@
 # CHANGELOG NOTATION FOR [DOLIBARR ERP CRM](https://www.dolibarr.org)
 
+## Unreleased
+
+- NEW : Compat v22 - *23/07/2025* - 1.1.0
+
 ## 1.0
 - FIX : Compat 21 - *10/12/2024* - 1.0.5  
 - FIX : fix conf compat20 - *05/07/2024* - 1.0.4  
