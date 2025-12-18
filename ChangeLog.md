@@ -3,6 +3,7 @@
 ## Unreleased
 
 ## 1.1
+- NEW : Compat v23 - *18/12/2025* - 1.1.1
 - NEW : Compat v22 - *23/07/2025* - 1.1.0
 
 ## 1.0
@@ -13,5 +14,3 @@
 - FIX : REF on create notation - *07/04/2023* - 1.0.1
 
 Initial version
-
-

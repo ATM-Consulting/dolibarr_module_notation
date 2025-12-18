@@ -102,9 +102,9 @@ $dol_openinpopup = GETPOST('dol_openinpopup', 'aZ09');
 $session =  GETPOST('session', 'int');
 $fk_session =  GETPOST('fk_session', 'int');
 $formation =  GETPOST('formation', 'int');
-$note = GETPOST('note','int');
+$note = GETPOST('note', 'int');
 $fk_trainee = GETPOST('fk_trainee', 'int');
-$status=GETPOST('status','int');
+$status=GETPOST('status', 'int');
 
 
 // Initialize technical objects
@@ -140,7 +140,7 @@ $enablepermissioncheck = 1;
 if ($enablepermissioncheck) {
 	$permissiontoread = $user->hasRight("notation", "notationnote", "read");
 	$permissiontoadd = $user->hasRight("notation", "notationnote", "write"); // Used by the include of actions_addupdatedelete.inc.php and actions_lineupdown.inc.php
-	$permissiontodelete = $user->rights->notation->notationnote->delete || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
+	$permissiontodelete = $user->hasRight('notation', 'notationnote', 'delete') || ($permissiontoadd && isset($object->status) && $object->status == $object::STATUS_DRAFT);
 	$permissionnote = $user->hasRight("notation", "notationnote", "write"); // Used by the include of actions_setnotes.inc.php
 	$permissiondellink = $user->hasRight("notation", "notationnote", "write"); // Used by the include of actions_dellink.inc.php
 } else {
@@ -183,17 +183,14 @@ if (empty($reshook)) {
 	}
 
 	// Error handler
-	if (($action == 'add' ||  $action == 'update') && empty($cancel)){
-
-
+	if (($action == 'add' ||  $action == 'update') && empty($cancel)) {
 		if (empty($object->ref) && $action == "add") $object->ref = $object->getNextNumRef();
 		$error=0;
 
-		if (empty(GETPOST('note')) || GETPOST('note') < floatval(getDolGlobalString('MIN_NOTATION', '0'))  || GETPOST('note') >  floatval(getDolGlobalString('MAX_NOTATION', '0')) ){
+		if (empty(GETPOST('note')) || GETPOST('note') < floatval(getDolGlobalString('MIN_NOTATION', '0'))  || GETPOST('note') >  floatval(getDolGlobalString('MAX_NOTATION', '0')) ) {
 			setEventMessages($langs->trans('ErrorType', $langs->transnoentitiesnoconv($object->fields['note']['label'])), null, 'errors');
 			$error++;
 		}
-
 	}
 
 
@@ -252,9 +249,9 @@ $title = $langs->trans("NotationNote");
 $help_url = '';
 llxHeader('', $title, $help_url);
 
-if (!empty($formation)){
+if (!empty($formation)) {
 	$addparams = "&formation=".$formation;
-}else{
+} else {
 	$addparams = "&session=".$session;
 }
 
@@ -270,10 +267,10 @@ if ($action == 'create') {
 	$res = $agf->fetch($session);
 	$agf->fetch_societe_per_session($session);
 
-	$ref = $agf->getNomUrl(1,"",0,'ref');
+	$ref = $agf->getNomUrl(1, "", 0, 'ref');
 
 
-// Display consult
+	// Display consult
 	$head = session_prepare_head($agf);
 
 	dol_fiche_head($head, 'notation', $langs->trans('AgfSessionDetail'), -1, 'generic');
@@ -325,7 +322,6 @@ if ($action == 'create') {
 
 // Part to edit record
 if (($id || $ref) && $action == 'edit') {
-
 	print load_fiche_titre($langs->trans("NotationNote"), '', 'object_'.$object->picto);
 
 	print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -431,10 +427,10 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 
 	// Object card
 	// ------------------------------------------------------------
-	if ($formation){
-		$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?formation='.$formation .  (!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
-	}else{
-		$linkback = '<a href="'.dol_buildpath('/notation/notationnote_list.php', 1).'?restore_lastsearch_values=1'. '&session='. $session . (!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	if ($formation) {
+		$linkback = '<a href="'. dol_buildpath('/notation/notationnote_list.php', 1).'?formation='.$formation .  (!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
+	} else {
+		$linkback = '<a href="'. dol_buildpath('/notation/notationnote_list.php', 1).'?restore_lastsearch_values=1&session='. $session . (!empty($socid) ? '&socid='.$socid : '').'">'.$langs->trans("BackToList").'</a>';
 	}
 
 	$morehtmlref = '<div class="refidno">';
@@ -442,9 +438,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 	$morehtmlref .= '</div>';
 
 	$addparams = "";
-	if (!empty($formation)){
+	if (!empty($formation)) {
 		$addparams = "&formation=".$formation;
-	}else{
+	} else {
 		$addparams = "&session=".$session;
 	}
 
@@ -545,9 +541,9 @@ if ($object->id > 0 && (empty($action) || ($action != 'edit' && $action != 'crea
 			}
 
 			$addParams = "";
-			if (!empty($formation)){
+			if (!empty($formation)) {
 				$addParams = "&formation=".$formation;
-			}else {
+			} else {
 				$addParams = "&session=".$session;
 			}
 

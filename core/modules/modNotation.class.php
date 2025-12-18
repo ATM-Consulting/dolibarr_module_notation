@@ -175,13 +175,13 @@ class modNotation extends DolibarrModules
 		// Array to add new pages in new tabs
 		$this->tabs = array();
 		// ligne vers session tab
-		$this->tabs[] = array('data' => 'agefodd_session:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?session=__ID__');
+		$this->tabs[] = array('data' => "agefodd_session:+notation:Notation:notation@notation:$user->hasRight('notation', 'notationnote', 'read'):/notation/notationnote_list.php?session=__ID__");
 		// ligne vers formation tab
-		$this->tabs[] = array('data' => 'agefodd_training:+notation:Notation:notation@notation:$user->rights->notation->notationnote->read:/notation/notationnote_list.php?formation=__ID__');
+		$this->tabs[] = array('data' => "agefodd_training:+notation:Notation:notation@notation:$user->hasRight('notation', 'notationnote', 'read'):/notation/notationnote_list.php?formation=__ID__");
 
 		// Example:
-		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@notation:$user->rights->notation->read:/notation/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
-		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@notation:$user->rights->othermodule->read:/notation/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
+		// $this->tabs[] = array('data'=>'objecttype:+tabname1:Title1:mylangfile@notation:$user->hasRight('notation', 'read'):/notation/mynewtab1.php?id=__ID__');  					// To add a new tab identified by code tabname1
+		// $this->tabs[] = array('data'=>'objecttype:+tabname2:SUBSTITUTION_Title2:mylangfile@notation:$user->hasRight('othermodule', 'read'):/notation/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2. Label will be result of calling all substitution functions on 'Title2' key.
 		// $this->tabs[] = array('data'=>'objecttype:-tabname:NU:conditiontoremove');                                                     										// To remove an existing tab identified by code tabname
 		//
 		// Where objecttype can be
@@ -278,7 +278,7 @@ class modNotation extends DolibarrModules
 		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->hasRight("notation", "notationnote", "read"))
 		$r++;
 		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-		$this->rights[$r][1] = $langs->trans('CreateUpdateObj') ; // Permission label
+		$this->rights[$r][1] = $langs->trans('CreateUpdateObj'); // Permission label
 		$this->rights[$r][4] = 'notationnote';
 		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->hasRight("notation", "notationnote", "write"))
 		$r++;
@@ -311,47 +311,46 @@ class modNotation extends DolibarrModules
 		);*/
 
 
-       /* $this->menu[$r++]=array(
-            // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-            'fk_menu'=>'fk_mainmenu=notation',
-            // This is a Left menu entry
-            'type'=>'left',
-            'titre'=>'List NotationNote',
-            'mainmenu'=>'notation',
-            'leftmenu'=>'notation_notationnote',
-            'url'=>'/notation/notationnote_list.php',
-            // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-            'langs'=>'notation@notation',
-            'position'=>1100+$r,
-            // Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-            'enabled'=>'isModEnabled("notation")',
-            // Use 'perms'=>'$user->hasRight("notation", "level1", "level2")' if you want your menu with a permission rules
-            'perms'=>'1',
-            'target'=>'',
-            // 0=Menu for internal users, 1=external users, 2=both
-            'user'=>2,
-        );
-        $this->menu[$r++]=array(
-            // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-            'fk_menu'=>'fk_mainmenu=notation,fk_leftmenu=notation_notationnote',
-            // This is a Left menu entry
-            'type'=>'left',
-            'titre'=>'New NotationNote',
-            'mainmenu'=>'notation',
-            'leftmenu'=>'notation_notationnote',
-            'url'=>'/notation/notationnote_card.php?action=create',
-            // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-            'langs'=>'notation@notation',
-            'position'=>1100+$r,
-            // Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-            'enabled'=>'isModEnabled("notation")',
-            // Use 'perms'=>'$user->hasRight("notation", "level1", "level2")' if you want your menu with a permission rules
-            'perms'=>'1',
-            'target'=>'',
-            // 0=Menu for internal users, 1=external users, 2=both
-            'user'=>2
-        );*/
-
+		/* $this->menu[$r++]=array(
+			// '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'fk_menu'=>'fk_mainmenu=notation',
+			// This is a Left menu entry
+			'type'=>'left',
+			'titre'=>'List NotationNote',
+			'mainmenu'=>'notation',
+			'leftmenu'=>'notation_notationnote',
+			'url'=>'/notation/notationnote_list.php',
+			// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'langs'=>'notation@notation',
+			'position'=>1100+$r,
+			// Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'isModEnabled("notation")',
+			// Use 'perms'=>'$user->hasRight("notation", "level1", "level2")' if you want your menu with a permission rules
+			'perms'=>'1',
+			'target'=>'',
+			// 0=Menu for internal users, 1=external users, 2=both
+			'user'=>2,
+		);
+		$this->menu[$r++]=array(
+			// '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'fk_menu'=>'fk_mainmenu=notation,fk_leftmenu=notation_notationnote',
+			// This is a Left menu entry
+			'type'=>'left',
+			'titre'=>'New NotationNote',
+			'mainmenu'=>'notation',
+			'leftmenu'=>'notation_notationnote',
+			'url'=>'/notation/notationnote_card.php?action=create',
+			// Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'langs'=>'notation@notation',
+			'position'=>1100+$r,
+			// Define condition to show or hide menu entry. Use '$conf->notation->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+			'enabled'=>'isModEnabled("notation")',
+			// Use 'perms'=>'$user->hasRight("notation", "level1", "level2")' if you want your menu with a permission rules
+			'perms'=>'1',
+			'target'=>'',
+			// 0=Menu for internal users, 1=external users, 2=both
+			'user'=>2
+		);*/
 	}
 
 	/**
